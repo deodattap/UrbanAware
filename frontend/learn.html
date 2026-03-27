@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UrbanAware - Awareness &amp; Learning</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config for Theme Colors -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              light: '#6EE7B7',
+              DEFAULT: '#10B981',
+              dark: '#059669',
+            },
+            secondary: {
+              light: '#60A5FA',
+              DEFAULT: '#3B82F6',
+              dark: '#2563EB',
+            },
+            urban: {
+              bg: '#F8FAFC',
+              card: '#FFFFFF',
+              text: '#1E293B',
+              muted: '#64748B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="assets/css/styles.css" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F8FAFC;
+    }
+  </style>
+<style data-purpose="custom-animations">
+    .card-hover {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #10B981 0%, #3B82F6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-gradient {
+      background: linear-gradient(90deg, #10B981 0%, #3B82F6 100%);
+    }
+  </style>
+</head>
+<body class="text-urban-text">
+<!-- BEGIN: MainHeader -->
+<header class="bg-white border-b border-gray-100 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-16">
+<!-- Logo -->
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-white font-bold text-xl">UA</div>
+<div>
+<h1 class="font-bold text-lg leading-tight">UrbanAware</h1>
+<p class="text-[10px] text-urban-muted uppercase tracking-wider">Smart City Platform</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="hidden md:flex space-x-8 items-center">
+<a class="text-urban-muted hover:text-secondary flex items-center gap-1 transition-colors" href="home.html">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Home
+          </a>
+<a class="text-urban-muted hover:text-secondary flex items-center gap-1 transition-colors" href="dashboard.html">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Dashboard
+          </a>
+<a class="bg-primary/10 text-primary font-semibold px-4 py-2 rounded-full flex items-center gap-1" href="learn.html">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.246.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.246.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Learn
+          </a>
+<a class="text-urban-muted hover:text-secondary flex items-center gap-1 transition-colors" href="drives.html">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Drives
+          </a>
+</nav>
+<!-- Profile/Report -->
+<div class="flex items-center gap-4">
+<a class="text-urban-muted hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium" href="reportissue.html">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Report Issue
+          </a>
+<div class="w-8 h-8 rounded-full bg-gray-200 border border-gray-300"></div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<main class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+<!-- BEGIN: HeroSection -->
+<div class="text-center mb-16" data-purpose="hero-section">
+<h2 class="text-5xl font-extrabold mb-4">
+<span class="gradient-text">Awareness &amp; Learning</span>
+</h2>
+<p class="text-urban-muted text-lg max-w-2xl mx-auto">
+        Learn about sustainable practices and test your knowledge to become a certified Green Citizen of your city.
+      </p>
+</div>
+<!-- END: HeroSection -->
+<!-- BEGIN: ModuleGrid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16" data-purpose="module-grid">
+<!-- Sustainable Transport (Active) -->
+<div class="card-hover bg-gradient-to-br from-secondary to-secondary-dark rounded-3xl p-8 text-white cursor-pointer shadow-lg shadow-blue-200">
+<div class="mb-6">
+<svg class="w-12 h-12" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h3 class="text-xl font-bold mb-2">Sustainable Transport</h3>
+</div>
+<!-- Waste Management -->
+<div class="card-hover bg-white rounded-3xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center cursor-pointer">
+<div class="mb-6 text-primary">
+<svg class="w-12 h-12" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h3 class="text-lg font-bold">Waste Management</h3>
+</div>
+<!-- Pollution Control -->
+<div class="card-hover bg-white rounded-3xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center cursor-pointer">
+<div class="mb-6 text-urban-muted">
+<svg class="w-12 h-12" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h3 class="text-lg font-bold">Pollution Control</h3>
+</div>
+<!-- Energy Saving -->
+<div class="card-hover bg-white rounded-3xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center cursor-pointer">
+<div class="mb-6 text-yellow-500">
+<svg class="w-12 h-12" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h3 class="text-lg font-bold">Energy Saving</h3>
+</div>
+</div>
+<!-- END: ModuleGrid -->
+<!-- BEGIN: ModuleDetailsSection -->
+<div class="bg-white rounded-[40px] p-10 md:p-14 shadow-sm border border-gray-50 mb-12" data-purpose="content-display">
+<!-- Title & Icon -->
+<div class="flex items-center gap-6 mb-12">
+<div class="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center text-white">
+<svg class="w-10 h-10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<h2 class="text-4xl font-extrabold">Sustainable Transport</h2>
+<p class="text-urban-muted text-lg">Essential tips and best practices</p>
+</div>
+</div>
+<!-- Do's and Don'ts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+<!-- Do's Column -->
+<div>
+<div class="flex items-center gap-3 mb-8">
+<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<h4 class="text-2xl font-bold">Do's</h4>
+</div>
+<div class="space-y-4">
+<div class="bg-primary/5 border border-primary/20 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-primary rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Use public transportation whenever possible</p>
+</div>
+<div class="bg-primary/5 border border-primary/20 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-primary rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Carpool with colleagues or friends</p>
+</div>
+<div class="bg-primary/5 border border-primary/20 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-primary rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Cycle or walk for short distances</p>
+</div>
+<div class="bg-primary/5 border border-primary/20 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-primary rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Choose electric or hybrid vehicles</p>
+</div>
+</div>
+</div>
+<!-- Don'ts Column -->
+<div>
+<div class="flex items-center gap-3 mb-8">
+<div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<h4 class="text-2xl font-bold">Don'ts</h4>
+</div>
+<div class="space-y-4">
+<div class="bg-red-50/50 border border-red-100 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-red-500 rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Don't leave your engine idling</p>
+</div>
+<div class="bg-red-50/50 border border-red-100 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-red-500 rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Avoid unnecessary solo car trips</p>
+</div>
+<div class="bg-red-50/50 border border-red-100 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-red-500 rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Don't speed - it wastes fuel</p>
+</div>
+<div class="bg-red-50/50 border border-red-100 p-5 rounded-2xl flex items-center gap-4">
+<div class="w-6 h-6 bg-red-500 rounded-full flex-shrink-0 flex items-center justify-center">
+<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<p class="font-medium">Avoid rush hour when possible</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quiz Button -->
+<button class="w-full btn-gradient p-1 rounded-2xl shadow-lg shadow-blue-100 transition-transform active:scale-95 group">
+<div class="bg-transparent text-white py-5 flex items-center justify-center gap-3 font-bold text-xl">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.246.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.246.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Test Your Knowledge
+        </div>
+</button>
+</div>
+<!-- END: ModuleDetailsSection -->
+<!-- BEGIN: KnowledgeCheck -->
+<div class="bg-white rounded-[40px] p-10 md:p-14 shadow-sm border border-gray-50 hidden" data-purpose="quiz-container" id="quiz-section">
+<div class="mb-8">
+<span class="bg-secondary/10 text-secondary px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest">Question 1 of 5</span>
+<h3 class="text-3xl font-bold mt-4">Which of the following is the most energy-efficient way to travel short distances in the city?</h3>
+</div>
+<div class="grid grid-cols-1 gap-4 mb-10">
+<label class="flex items-center p-6 border-2 border-gray-100 rounded-3xl hover:border-secondary cursor-pointer transition-all group">
+<input class="w-5 h-5 text-secondary border-gray-300 focus:ring-secondary" name="q1" type="radio"/>
+<span class="ml-4 text-lg font-medium">Driving an electric SUV</span>
+</label>
+<label class="flex items-center p-6 border-2 border-secondary bg-secondary/5 rounded-3xl cursor-pointer transition-all">
+<input checked="" class="w-5 h-5 text-secondary border-gray-300 focus:ring-secondary" name="q1" type="radio"/>
+<span class="ml-4 text-lg font-medium">Walking or Biking</span>
+</label>
+<label class="flex items-center p-6 border-2 border-gray-100 rounded-3xl hover:border-secondary cursor-pointer transition-all">
+<input class="w-5 h-5 text-secondary border-gray-300 focus:ring-secondary" name="q1" type="radio"/>
+<span class="ml-4 text-lg font-medium">Taking a Diesel Taxi</span>
+</label>
+<label class="flex items-center p-6 border-2 border-gray-100 rounded-3xl hover:border-secondary cursor-pointer transition-all">
+<input class="w-5 h-5 text-secondary border-gray-300 focus:ring-secondary" name="q1" type="radio"/>
+<span class="ml-4 text-lg font-medium">Using a Motorbike</span>
+</label>
+</div>
+<div class="flex justify-between items-center">
+<button class="text-urban-muted font-bold px-6 py-3">Skip Question</button>
+<button class="bg-urban-text text-white px-10 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-colors">Next Question</button>
+</div>
+</div>
+<!-- END: KnowledgeCheck -->
+</main>
+<!-- BEGIN: Footer -->
+<footer class="py-12 text-center text-urban-muted border-t border-gray-100">
+<p>© 2023 UrbanAware. All Rights Reserved.</p>
+</footer>
+<!-- END: Footer -->
+<script src="assets/js/common.js"></script>
+<script src="assets/js/learn.js"></script>
+</body></html>

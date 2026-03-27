@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>UrbanAware - Know Your City</title>
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="assets/css/styles.css" rel="stylesheet"/>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#22C55E',
+              blue: '#3B82F6',
+              dark: '#0F172A'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    .float-animation { animation: float 6s ease-in-out infinite; }
+    
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .text-gradient {
+      background: linear-gradient(135deg, #22C55E 0%, #3B82F6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Biophilic Background & Leaves */
+    .hero-leaves-bg {
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+      position: relative;
+    }
+
+    .hero-leaves-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; width: 100%; height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" fill="%2322C55E" fill-opacity="0.08"><path d="M0,288L60,266.7C120,245,240,203,360,197.3C480,192,600,224,720,240C840,256,960,256,1080,245.3C1200,235,1320,213,1380,202.7L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>');
+      background-size: cover;
+      background-position: bottom;
+      background-repeat: no-repeat;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #leaf-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .falling-leaf {
+      position: absolute;
+      background-size: contain;
+      background-repeat: no-repeat;
+      animation: leafFall linear forwards;
+    }
+
+    @keyframes leafFall {
+      0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
+
+  <nav class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
+    <div class="glass-nav rounded-2xl px-6 py-3 flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center text-white font-bold">UA</div>
+        <span class="font-bold text-lg tracking-tight hidden sm:block">UrbanAware</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+        <a class="flex items-center gap-1 text-brand-green font-bold" href="home.html">Home</a>
+        <a class="hover:text-brand-blue transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="hover:text-brand-blue transition-colors" href="learn.html">Learn</a>
+        <a class="hover:text-brand-blue transition-colors" href="drives.html">Drives</a>
+        <a class="hover:text-brand-blue transition-colors" href="reportissue.html">Report Issue</a>
+      </div>
+      <a class="px-5 py-2 bg-brand-dark text-white rounded-xl text-sm font-semibold shadow-md" href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+<section class="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 hero-leaves-bg overflow-hidden">
+    
+    <div id="leaf-container"></div>
+
+    <div class="absolute inset-0 z-0 flex items-end justify-center pointer-events-none opacity-30 md:opacity-50">
+        <lottie-player 
+          src="assets/animation/cyclist.json" 
+          background="transparent" 
+          speed="1.2" 
+          style="width: 100%; max-width: 900px; margin-bottom: -40px;" 
+          loop 
+          autoplay>
+        </lottie-player>
+    </div>
+
+    <div class="container mx-auto px-6 relative z-10 text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-full text-brand-green text-xs font-bold mb-8 mx-auto">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </span>
+        SMART URBAN SUSTAINABILITY PLATFORM
+      </div>
+      
+      <h1 class="text-6xl md:text-8xl font-extrabold tracking-tight leading-tight -mt-20 mb-40">
+        <span class="text-slate-900">Know Your</span>
+        <span class="text-gradient">City.</span><br/>
+        <span class="text-gradient">Shape Its</span>
+        <span class="text-slate-900">Future.</span>
+      </h1>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+        <a href="dashboard.html" class="px-10 py-4 bg-brand-green text-white rounded-2xl font-bold text-lg shadow-xl hover:-translate-y-1 transition-all">
+          Explore Dashboard
+        </a>
+        <a href="learn.html" class="px-10 py-4 bg-white/90 backdrop-blur-sm text-slate-700 border border-slate-200 rounded-2xl font-bold text-lg shadow-sm hover:bg-white transition-all">
+          Learn More
+        </a>
+      </div>
+    </div>
+</section>
+
+  <section class="py-24 bg-slate-50 relative z-10" id="features">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-4xl font-extrabold text-slate-900 mb-4">Platform Features</h2>
+      <p class="text-slate-500 max-w-xl mx-auto mb-16">Everything you need to monitor and improve your urban environment.</p>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-hover" data-purpose="feature-card">
+          <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+            <svg class="w-8 h-8 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Live City Data</h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-4">Real-time monitoring of AQI, noise, and traffic.</p>
+          <a class="text-brand-blue font-semibold text-sm" href="dashboard.html text-center">Explore Dashboard →</a>
+        </div>
+        
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-hover" data-purpose="feature-card">
+          <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+             <svg class="w-8 h-8 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Sustainability Drives</h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-4">Join local community initiatives.</p>
+          <a class="text-brand-green font-semibold text-sm" href="drives.html">Join Now →</a>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-hover" data-purpose="feature-card">
+          <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+            <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Report Issues</h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-4">Report pollution and urban problems.</p>
+          <a class="text-orange-500 font-semibold text-sm" href="reportissue.html">Report Now →</a>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 card-hover" data-purpose="feature-card">
+          <div class="w-14 h-14 bg-teal-100 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+            <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Knowledge Hub</h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-4">Learn about sustainable practices.</p>
+          <a class="text-teal-600 font-semibold text-sm" href="learn.html">Learn More →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 relative z-10">
+    <div class="container mx-auto px-6">
+      <div class="relative bg-brand-dark rounded-[3rem] p-12 md:p-20 overflow-hidden text-center md:text-left">
+        <div class="relative z-10 max-w-3xl">
+          <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">Ready to build the city of the future?</h2>
+          <p class="text-slate-300 text-lg mb-10">Start contributing to a more sustainable urban ecosystem.</p>
+          <div class="flex flex-wrap justify-center md:justify-start gap-4">
+            <button class="px-8 py-4 bg-white text-brand-dark rounded-2xl font-bold hover:bg-slate-100 transition-all">App Store</button>
+            <button class="px-8 py-4 bg-slate-800 text-white border border-slate-700 rounded-2xl font-bold hover:bg-slate-700 transition-all">Google Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-white border-t border-slate-100 py-12 text-center relative z-10">
+    <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+      <span class="font-bold text-lg text-slate-900">UrbanAware</span>
+      <div class="text-slate-400 text-sm">© 2026 UrbanAware. All Rights Reserved.</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initFallingLeaves();
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+            entry.target.classList.remove('opacity-0', 'translate-y-10');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('[data-purpose="feature-card"]').forEach(card => {
+        card.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
+        observer.observe(card);
+      });
+    });
+
+    function initFallingLeaves() {
+      const container = document.getElementById('leaf-container');
+      if (!container) return;
+      setInterval(() => {
+        const leaf = document.createElement('div');
+        leaf.className = 'falling-leaf';
+        const size = Math.random() * 15 + 15;
+        leaf.style.width = `${size}px`;
+        leaf.style.height = `${size}px`;
+        leaf.style.left = `${Math.random() * 100}vw`;
+        leaf.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        const color = Math.random() > 0.5 ? '%2322C55E' : '%2315803d';
+        leaf.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C22 3 21 8 17 8ZM11.97 15.06C10.74 14.53 9.77 13.56 9.24 12.33C8.42 10.38 8.87 8 10.5 6.37C12.13 4.74 14.52 4.29 16.47 5.11C15.8 7.33 14.19 9.16 11.97 15.06Z"/></svg>')`;
+        container.appendChild(leaf);
+        leaf.addEventListener('animationend', () => leaf.remove());
+      }, 1300);
+    }
+  </script>
+</body>
+</html>

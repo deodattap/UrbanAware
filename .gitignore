@@ -1,0 +1,9 @@
+node_modules/
+<<<<<<< HEAD
+backend/node_modules/
+.env
+=======
+.env
+uploads/
+>>>>>>> 729b6a7 (updated report and drive issue)
+backend/uploads/

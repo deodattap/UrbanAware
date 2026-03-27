@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UrbanAware - Urban Dashboard</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="assets/css/styles.css" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'ua-green': '#50C878',
+            'ua-blue': '#4A90E2',
+            'ua-dark': '#2D3436',
+          },
+          backgroundImage: {
+            'ua-gradient': 'linear-gradient(135deg, #50C878 0%, #4A90E2 100%)',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="layout-styles">
+    body {
+      background-color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+    }
+    .card-shadow {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
+<style data-purpose="animations">
+    @keyframes pulse-ring {
+      0% { transform: scale(.33); opacity: 1; }
+      80%, 100% { opacity: 0; }
+    }
+    @keyframes pulse-dot {
+      0% { transform: scale(.8); }
+      50% { transform: scale(1); }
+      100% { transform: scale(.8); }
+    }
+    .pulse-container {
+      position: relative;
+    }
+    .pulse-ring {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: -100%;
+      width: 300%;
+      height: 300%;
+      border-radius: 50%;
+      animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    .pulse-dot {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -.4s infinite;
+    }
+
+    /* Chart reveal animation */
+    .chart-path {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: dash 3s ease-in-out forwards;
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+<!-- BEGIN: MainHeader -->
+<header class="bg-white border-b border-gray-100 py-3 px-6 flex items-center justify-between sticky top-0 z-50">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-ua-blue rounded-lg flex items-center justify-center text-white font-bold text-xl">UA</div>
+<div class="leading-tight">
+<h1 class="font-bold text-ua-dark text-lg">UrbanAware</h1>
+<p class="text-xs text-gray-400">Smart City Platform</p>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+<a class="flex items-center gap-1 hover:text-ua-green transition-colors" href="home.html"><i class="fa-solid fa-house text-xs"></i> Home</a>
+<a class="flex items-center gap-1 text-ua-green bg-green-50 px-4 py-2 rounded-full shadow-sm" href="dashboard.html"><i class="fa-solid fa-chart-pie text-xs"></i> Dashboard</a>
+<a class="flex items-center gap-1 hover:text-ua-green transition-colors" href="learn.html"><i class="fa-solid fa-book-open text-xs"></i> Learn</a>
+<a class="flex items-center gap-1 hover:text-ua-green transition-colors" href="drives.html"><i class="fa-solid fa-car text-xs"></i> Drives</a>
+<a class="flex items-center gap-1 hover:text-ua-green transition-colors" href="reportissue.html"><i class="fa-solid fa-clock text-xs"></i> Report Issue</a>
+</nav>
+<div class="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
+<img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATGh40kSBZYKONOJHSkp-TJ3iUaGJ4op3V7GMX9eE2_hk7sOlY0i4jAD0dSskIf7CLIv0nvEwtp-JEZq_J8-lW0OUUBaCfaTLWjcsMT75mCVuI4Pnrc2EVEhkG2MPgu7lPs2gzLqWFm4tPgHg72wLe8S07lpw0VzDTSW9uGcYoTxolF4rR0YN0A55vojmUDf7oHe0YgvZyYK3GZovtVAoPHdtuJA8vzCLcAjD8sxa5M34hp5RWqHtbRm44usvTZckDeOSflusPnrRh"/>
+</div>
+</header>
+<!-- END: MainHeader -->
+<main class="max-w-7xl mx-auto px-4 py-8">
+<!-- BEGIN: HeroSection -->
+<div class="text-center mb-10" data-purpose="hero-section">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-ua-green rounded-full text-xs font-bold mb-4">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-ua-green opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-ua-green"></span>
+</span>
+        Real-Time Data
+      </div>
+<h2 class="text-4xl md:text-5xl font-extrabold text-gray-800 mb-3">Urban <span class="text-ua-green">Dashboard</span></h2>
+<p class="text-gray-500 max-w-lg mx-auto">Real-time insights into your city's sustainability metrics</p>
+</div>
+<!-- END: HeroSection -->
+<!-- BEGIN: QuickStats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10" data-purpose="metrics-grid">
+<!-- AQI Card -->
+<div class="bg-white p-5 rounded-3xl card-shadow border border-pink-50">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-500">
+<i class="fa-solid fa-wind"></i>
+</div>
+<span class="text-[10px] font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full">+12%</span>
+</div>
+<p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Air Quality Index</p>
+<p class="text-3xl font-bold text-gray-800 my-1">156</p>
+<div class="h-8 mb-2 overflow-hidden">
+<svg class="w-full h-full stroke-pink-400 fill-none stroke-[2]" viewbox="0 0 100 20">
+<path class="chart-path" d="M0,15 Q10,10 20,15 T40,15 T60,10 T80,15 T100,10"></path>
+</svg>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-pink-500"></span>
+<span class="text-[10px] font-bold text-pink-500 uppercase">Bad</span>
+</div>
+</div>
+<!-- Traffic Card -->
+<div class="bg-white p-5 rounded-3xl card-shadow border border-orange-50">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-500">
+<i class="fa-solid fa-car"></i>
+</div>
+<span class="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">+5%</span>
+</div>
+<p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Traffic Level</p>
+<p class="text-3xl font-bold text-gray-800 my-1">78%</p>
+<div class="h-8 mb-2 overflow-hidden">
+<svg class="w-full h-full stroke-orange-400 fill-none stroke-[2]" viewbox="0 0 100 20">
+<path class="chart-path" d="M0,12 Q10,18 20,12 T40,15 T60,12 T80,18 T100,12"></path>
+</svg>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-orange-500"></span>
+<span class="text-[10px] font-bold text-orange-500 uppercase">Moderate</span>
+</div>
+</div>
+<!-- Temperature Card -->
+<div class="bg-white p-5 rounded-3xl card-shadow border border-amber-50">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-500">
+<i class="fa-solid fa-temperature-three-quarters"></i>
+</div>
+<span class="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">+3%</span>
+</div>
+<p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Temperature</p>
+<p class="text-3xl font-bold text-gray-800 my-1">32°C</p>
+<div class="h-8 mb-2 overflow-hidden">
+<svg class="w-full h-full stroke-amber-400 fill-none stroke-[2]" viewbox="0 0 100 20">
+<path class="chart-path" d="M0,10 Q25,10 50,15 T100,15"></path>
+</svg>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span class="text-[10px] font-bold text-amber-500 uppercase">Moderate</span>
+</div>
+</div>
+<!-- Waste Card -->
+<div class="bg-white p-5 rounded-3xl card-shadow border border-emerald-50">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-500">
+<i class="fa-solid fa-trash-can"></i>
+</div>
+<span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">+2%</span>
+</div>
+<p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Waste Collection</p>
+<p class="text-3xl font-bold text-gray-800 my-1">85%</p>
+<div class="h-8 mb-2 overflow-hidden">
+<svg class="w-full h-full stroke-emerald-400 fill-none stroke-[2]" viewbox="0 0 100 20">
+<path class="chart-path" d="M0,15 L20,14 L40,16 L60,15 L80,16 L100,14"></path>
+</svg>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-[10px] font-bold text-emerald-500 uppercase">Good</span>
+</div>
+</div>
+</div>
+<!-- END: QuickStats -->
+<!-- BEGIN: SustainabilityBanner -->
+<section class="bg-ua-gradient p-8 rounded-[40px] text-white relative overflow-hidden mb-10" data-purpose="hero-banner">
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-center gap-5">
+<div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl">
+<i class="fa-solid fa-award"></i>
+</div>
+<div>
+<h3 class="text-2xl font-bold">Sustainability Score</h3>
+<p class="text-sm text-white/80">Keep up the great work!</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-5xl font-black">1,250</p>
+<div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-semibold mt-2">
+<i class="fa-solid fa-leaf text-green-300"></i> Green Citizen
+          </div>
+</div>
+</div>
+<div class="mt-10 relative z-10">
+<div class="flex justify-between text-xs font-bold mb-2 uppercase tracking-wide">
+<span>Progress to Sustainability Hero</span>
+<span>62%</span>
+</div>
+<div class="h-3 bg-black/10 rounded-full overflow-hidden">
+<div class="h-full bg-white rounded-full sustainability-progress-bar" style="width: 62%"></div>
+</div>
+</div>
+<!-- Decor elements -->
+<div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+<div class="absolute -left-10 -top-10 w-48 h-48 bg-black/5 rounded-full blur-2xl"></div>
+</section>
+<!-- END: SustainabilityBanner -->
+<!-- BEGIN: LiveStatusSection -->
+<section class="bg-white rounded-[40px] p-8 card-shadow" data-purpose="city-status">
+<div class="flex items-center gap-2 mb-6">
+<div class="w-1.5 h-6 bg-ua-blue rounded-full"></div>
+<h3 class="text-2xl font-bold text-gray-800">Live City Status</h3>
+</div>
+<!-- Controls -->
+<div class="flex flex-wrap items-center gap-4 mb-8">
+<button class="bg-ua-blue text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-200">
+<i class="fa-solid fa-wind"></i> AQI Checker
+        </button>
+<button class="bg-gray-50 text-gray-500 px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-100">
+<i class="fa-solid fa-car"></i> Traffic Level
+        </button>
+<button class="bg-gray-50 text-gray-500 px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-100">
+<i class="fa-solid fa-temperature-low"></i> Temperature
+        </button>
+<button class="bg-gray-50 text-gray-500 px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-100">
+<i class="fa-solid fa-trash"></i> Waste Status
+        </button>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-10">
+<i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+<input class="w-full bg-gray-50 border-gray-100 rounded-2xl py-4 pl-14 pr-6 focus:ring-ua-blue focus:border-ua-blue text-gray-600 transition-all" placeholder="Search city or area..." type="text"/>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Visual Map Placeholder -->
+<div class="lg:col-span-2 bg-[#F1FAFE] rounded-[30px] p-8 flex items-center justify-center relative min-h-[400px]">
+<!-- Simple SVG abstraction of the leaf-like map shape from prompt -->
+<div class="relative w-72 h-96">
+<svg class="w-full h-full fill-[#E1F3FD] stroke-ua-blue stroke-[2] stroke-dasharray-4" viewbox="0 0 200 300">
+<path d="M100,10 C150,80 180,150 100,290 C20,150 50,80 100,10 Z"></path>
+</svg>
+<!-- Pulsing Pins -->
+<!-- Good (Green) -->
+<div class="absolute top-[75%] left-[20%] pulse-container">
+<div class="pulse-ring bg-ua-green"></div>
+<div class="pulse-dot bg-ua-green"></div>
+</div>
+<!-- Moderate (Orange) -->
+<div class="absolute top-[60%] left-[10%] pulse-container">
+<div class="pulse-ring bg-orange-500"></div>
+<div class="pulse-dot bg-orange-500"></div>
+</div>
+<!-- Poor (Red) -->
+<div class="absolute top-[25%] left-[35%] pulse-container">
+<div class="pulse-ring bg-pink-500"></div>
+<div class="pulse-dot bg-pink-500"></div>
+</div>
+<!-- Poor (Red) -->
+<div class="absolute top-[40%] left-[60%] pulse-container">
+<div class="pulse-ring bg-pink-500"></div>
+<div class="pulse-dot bg-pink-500"></div>
+</div>
+<!-- Moderate (Orange) -->
+<div class="absolute top-[80%] left-[45%] pulse-container">
+<div class="pulse-ring bg-orange-500"></div>
+<div class="pulse-dot bg-orange-500"></div>
+</div>
+</div>
+<!-- Map Legend -->
+<div class="absolute top-6 right-6 bg-white p-4 rounded-2xl card-shadow border border-gray-100">
+<p class="text-[10px] uppercase font-bold text-gray-400 mb-3 tracking-widest">Status</p>
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<span class="status-dot bg-ua-green"></span>
+<span class="text-xs font-semibold text-gray-600">Good</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="status-dot bg-orange-400"></span>
+<span class="text-xs font-semibold text-gray-600">Moderate</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="status-dot bg-pink-500"></span>
+<span class="text-xs font-semibold text-gray-600">Poor</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Trend Graph -->
+<div class="bg-white rounded-[30px] p-6 border border-gray-50 card-shadow flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 bg-ua-green/10 text-ua-green rounded-xl flex items-center justify-center">
+<i class="fa-solid fa-chart-line"></i>
+</div>
+<h4 class="font-bold text-gray-800">Today's Trend</h4>
+</div>
+<!-- Visualization: Area Chart Placeholder -->
+<div class="relative h-64 w-full">
+<svg class="w-full h-full" viewbox="0 0 100 80">
+<!-- Grid Lines -->
+<line stroke="#f1f5f9" stroke-width="0.5" x1="0" x2="100" y1="20" y2="20"></line>
+<line stroke="#f1f5f9" stroke-width="0.5" x1="0" x2="100" y1="40" y2="40"></line>
+<line stroke="#f1f5f9" stroke-width="0.5" x1="0" x2="100" y1="60" y2="60"></line>
+<!-- Area Gradient -->
+<defs>
+<lineargradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#50C878" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#50C878" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- The Graph Path -->
+<path d="M0,50 C20,30 40,10 70,10 C90,10 100,30 100,45 L100,80 L0,80 Z" fill="url(#areaGradient)"></path>
+<path class="chart-path" d="M0,50 C20,30 40,10 70,10 C90,10 100,30 100,45" fill="none" stroke="#50C878" stroke-width="2"></path>
+<!-- Y-Axis Labels -->
+<text fill="#cbd5e1" font-size="3" x="0" y="18">100</text>
+<text fill="#cbd5e1" font-size="3" x="0" y="38">75</text>
+<text fill="#cbd5e1" font-size="3" x="0" y="58">50</text>
+<text fill="#cbd5e1" font-size="3" x="0" y="78">25</text>
+</svg>
+</div>
+<div class="flex justify-between mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+<span>6am</span>
+<span>9am</span>
+<span>12pm</span>
+<span>3pm</span>
+<span>6pm</span>
+<span>9pm</span>
+</div>
+</div>
+<div class="bg-blue-50/50 p-4 rounded-2xl mt-6">
+<p class="text-xs text-gray-600 leading-relaxed">
+<span class="font-bold text-ua-blue">Insight:</span> Air quality is projected to improve significantly towards the evening as traffic density reduces.
+            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- END: LiveStatusSection -->
+</main>
+<!-- Footer -->
+<footer class="text-center py-10 text-gray-400 text-sm">
+    © 2023 UrbanAware. All Rights Reserved.
+  </footer>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/dashboard.js"></script>
+</body></html>
