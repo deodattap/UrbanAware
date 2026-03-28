@@ -116,11 +116,11 @@
         <a class="hover:text-brand-blue transition-colors" href="drives.html">Drives</a>
         <a class="hover:text-brand-blue transition-colors" href="reportissue.html">Report Issue</a>
       </div>
-      <a class="px-5 py-2 bg-brand-dark text-white rounded-xl text-sm font-semibold shadow-md" href="dashboard.html">Dashboard</a>
+      <div id="ua-nav-auth-slot" class="flex items-center gap-2"></div>
     </div>
   </nav>
 
-<section class="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 hero-leaves-bg overflow-hidden">
+<section class="relative min-h-screen flex items-center justify-center pt-28 pb-16 hero-leaves-bg overflow-hidden">
     
     <div id="leaf-container"></div>
 
@@ -129,29 +129,32 @@
           src="assets/animation/cyclist.json" 
           background="transparent" 
           speed="1.2" 
-          style="width: 100%; max-width: 900px; margin-bottom: -40px;" 
+          style="width: 100%; max-width: 1100px; margin-top: 80px;" 
           loop 
           autoplay>
         </lottie-player>
     </div>
 
-    <div class="container mx-auto px-6 relative z-10 text-center">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-full text-brand-green text-xs font-bold mb-8 mx-auto">
+    <div class="container mx-auto px-6 relative z-10 text-center flex flex-col items-center gap-6">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-full text-brand-green text-xs font-bold">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
         </span>
         SMART URBAN SUSTAINABILITY PLATFORM
       </div>
-      
-      <h1 class="text-6xl md:text-8xl font-extrabold tracking-tight leading-tight -mt-20 mb-40">
+      <!-- Heading -->
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
         <span class="text-slate-900">Know Your</span>
         <span class="text-gradient">City.</span><br/>
         <span class="text-gradient">Shape Its</span>
         <span class="text-slate-900">Future.</span>
       </h1>
-      
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+      <!-- Description -->
+      <p class="text-slate-500 text-lg max-w-xl">Monitor AQI, track urban issues, join sustainability drives and learn how to make your city greener.</p>
+      <!-- Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <a href="dashboard.html" class="px-10 py-4 bg-brand-green text-white rounded-2xl font-bold text-lg shadow-xl hover:-translate-y-1 transition-all">
           Explore Dashboard
         </a>

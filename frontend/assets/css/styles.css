@@ -1,0 +1,107 @@
+/* UrbanAware — Global Styles */
+
+/* ─── FADE-IN ─────────────────────────────────────────── */
+body.fade-in { animation: ua-fade 0.4s ease; }
+@keyframes ua-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ─── TOAST ───────────────────────────────────────────── */
+.toast, #ua-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1e293b;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 99999;
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(.175,.885,.32,1.275), opacity 0.35s ease;
+  white-space: nowrap;
+  max-width: calc(100vw - 48px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  pointer-events: none;
+}
+.toast.active, #ua-toast.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── MODAL OVERLAY ───────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0,0,0,.2);
+  transform: scale(0.95) translateY(8px);
+  transition: transform 0.25s cubic-bezier(.175,.885,.32,1.275);
+}
+.modal-overlay.active .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+/* ─── NAV ACTIVE ──────────────────────────────────────── */
+.nav-link-active {
+  color: #22c55e !important;
+  font-weight: 700;
+}
+
+/* ─── GRADIENT BUTTON ─────────────────────────────────── */
+.btn-gradient {
+  background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+}
+
+/* ─── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ─── UA AUTH WRAPPER BUTTON HOVER ───────────────────── */
+.ua-auth-wrapper button:hover { opacity: 0.85; }
+
+/* ─── LEARN PAGE SECONDARY COLOR FALLBACKS ───────────── */
+:root {
+  --color-primary: #22c55e;
+  --color-secondary: #3b82f6;
+}
+.text-secondary    { color: var(--color-secondary); }
+.border-secondary  { border-color: var(--color-secondary); }
+.bg-secondary      { background-color: var(--color-secondary); }
+.bg-primary        { background-color: var(--color-primary); }
+.text-primary      { color: var(--color-primary); }
+.bg-primary\/5     { background-color: rgba(34,197,94,.05); }
+.bg-primary\/10    { background-color: rgba(34,197,94,.1); }
+.border-primary\/20{ border-color: rgba(34,197,94,.2); }
+.from-secondary    { --tw-gradient-from: var(--color-secondary); }
+.to-secondary-dark { --tw-gradient-to: #2563eb; }
+.text-urban-muted  { color: #6b7280; }
+.ua-green { color: #22c55e; }
+.text-ua-green { color: #22c55e; }
+.bg-ua-blue  { background-color: #3b82f6; }
+.text-ua-dark { color: #0f172a; }

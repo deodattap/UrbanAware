@@ -70,14 +70,14 @@ function initReportSection() {
           <select id="rp-type" required class="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-red-400 bg-white">
             <option value="">Select type…</option>
             <option value="garbage">🗑️ Waste Issue</option>
-            <option value="pollution">🔊 Noise Pollution</option>
+            <option value="noise">🔊 Noise Pollution</option>
             <option value="traffic">🚦 Traffic Issue</option>
             <option value="pollution">🌫️ Air Pollution</option>
-            <option value="garbage">💧 Water Issue</option>
-            <option value="garbage">🚯 Illegal Dumping</option>
-            <option value="traffic">🕳️ Road Damage</option>
-            <option value="pollution">💡 Street Light Problem</option>
-            <option value="garbage">📋 Other</option>
+            <option value="water">💧 Water Issue</option>
+            <option value="dumping">🚯 Illegal Dumping</option>
+            <option value="road">🕳️ Road Damage</option>
+            <option value="lighting">💡 Street Light Problem</option>
+            <option value="other">📋 Other</option>
           </select>
         </div>
         <div>
