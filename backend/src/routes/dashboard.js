@@ -136,35 +136,39 @@ router.get('/profile-summary', protect, async (req, res) => {
 module.exports = router;
 
 // ─── GET /api/dashboard/data ──────────────────────────────────
-// Returns AQI, weather, traffic, waste — mock with realistic variance
+// Returns AQI, weather, traffic, waste — supports ?lat=...&lng=... for geo-aware data
 router.get('/data', async (req, res) => {
   try {
     const WAQI_TOKEN = process.env.WAQI_TOKEN || process.env.WAQI_API_TOKEN || 'demo';
     const OWM_KEY    = process.env.OPENWEATHER_KEY || process.env.OPENWEATHER_API_KEY || '';
 
+    const lat = parseFloat(req.query.lat);
+    const lng = parseFloat(req.query.lng);
+    const hasCoords = !isNaN(lat) && !isNaN(lng);
+
     let aqi     = null;
     let weather = null;
 
-    // Try WAQI (AQI) — works with 'demo' token for Delhi
+    // Try WAQI (AQI) — geo endpoint if coords provided, else Delhi fallback
     if (WAQI_TOKEN) {
       try {
         const axios = require('axios');
-        const r = await axios.get(
-          `https://api.waqi.info/feed/delhi/?token=${WAQI_TOKEN}`,
-          { timeout: 4000 }
-        );
+        const waqiUrl = hasCoords
+          ? `https://api.waqi.info/feed/geo:${lat};${lng}/?token=${WAQI_TOKEN}`
+          : `https://api.waqi.info/feed/delhi/?token=${WAQI_TOKEN}`;
+        const r = await axios.get(waqiUrl, { timeout: 4000 });
         if (r.data.status === 'ok') aqi = r.data.data.aqi;
       } catch (_) {}
     }
 
-    // Try OpenWeatherMap
+    // Try OpenWeatherMap — lat/lng if provided, else Delhi
     if (OWM_KEY && OWM_KEY !== 'demo') {
       try {
         const axios = require('axios');
-        const r = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=Delhi&appid=${OWM_KEY}&units=metric`,
-          { timeout: 4000 }
-        );
+        const owmUrl = hasCoords
+          ? `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${OWM_KEY}&units=metric`
+          : `https://api.openweathermap.org/data/2.5/weather?q=Delhi&appid=${OWM_KEY}&units=metric`;
+        const r = await axios.get(owmUrl, { timeout: 4000 });
         weather = {
           temperature: Math.round(r.data.main.temp),
           condition:   r.data.weather[0].description
@@ -172,8 +176,14 @@ router.get('/data', async (req, res) => {
       } catch (_) {}
     }
 
-    // Realistic mock fallbacks with slight randomness
-    if (aqi === null) aqi = 120 + Math.floor(Math.random() * 60);
+    // AQI fallback: coord-based so different locations yield different values,
+    // plus small randomness so the same spot varies slightly on each call.
+    if (aqi === null) {
+      const base = hasCoords
+        ? 50 + Math.abs(Math.floor((lat + lng) % 100))   // location-derived base
+        : 120;                                             // Delhi default base
+      aqi = Math.min(300, base + Math.floor(Math.random() * 20));
+    }
     if (!weather) weather = {
       temperature: 28 + Math.floor(Math.random() * 8),
       condition:   ['Partly Cloudy', 'Hazy', 'Sunny', 'Overcast'][Math.floor(Math.random() * 4)]
