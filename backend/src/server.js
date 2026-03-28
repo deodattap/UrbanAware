@@ -1,8 +1,8 @@
 // src/server.js
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const express  = require('express');
+const cors     = require('cors');
+const path     = require('path');
 const mongoose = require('mongoose');
 
 const app = express();
@@ -19,12 +19,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ─── Routes ──────────────────────────────────────────────────
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/dashboard', require('./routes/dashboard')); // keep if exists
-app.use('/api/drives', require('./routes/drives'));
-app.use('/api/report', require('./routes/report'));
-app.use('/api/user', require('./routes/user'));
-app.use('/api/quiz', require('./routes/quiz'));
+app.use('/api/auth',    require('./routes/auth'));
+app.use('/api/drives',  require('./routes/drives'));
+app.use('/api/report',  require('./routes/report'));
+app.use('/api/user',    require('./routes/user'));
+app.use('/api/quiz',    require('./routes/quiz'));
+
+// Dashboard route is optional (may not exist in all branches)
+try {
+  app.use('/api/dashboard', require('./routes/dashboard'));
+} catch (e) {
+  console.warn('⚠️  dashboard route not found — skipping.');
+}
 
 // Health check
 app.get('/api/health', (req, res) =>
@@ -40,6 +46,7 @@ app.use((req, res) => {
 });
 
 // ─── Global error handler ────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(err.status || 500).json({
@@ -61,8 +68,9 @@ mongoose
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
+    // Start server anyway so health check still responds
     app.listen(PORT, () =>
-      console.log(`⚠️ Server running WITHOUT DB on http://localhost:${PORT}`)
+      console.log(`⚠️  Server running WITHOUT DB on http://localhost:${PORT}`)
     );
   });
 
