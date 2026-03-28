@@ -111,30 +111,28 @@ function openJoinModal(driveId, driveName) {
     return;
   }
 
+  // Static/demo cards have no driveId — inform user gracefully
+  if (!driveId) {
+    showToast('This is a demo drive. Real drives appear once approved by admins.');
+    return;
+  }
+
   const user = getUser();
   showModal(
     `Join: ${driveName}`,
     `<div class="space-y-3">
        <p class="text-gray-600 text-sm">Joining as: <strong>${user?.name || 'You'}</strong></p>
-       <input id="join-location" type="text" placeholder="Your area / locality (optional)"
-         class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
      </div>`,
     async () => {
-      const location = document.getElementById('join-location')?.value.trim();
-      const payload  = {
-        driveId,
-        driveName,
-        name:     user?.name  || 'Anonymous',
-        email:    user?.email || '',
-        location: location    || ''
-      };
       const result = await apiRequest('/drives/join', {
         method: 'POST',
-        body:   JSON.stringify(payload)
+        body:   JSON.stringify({ driveId })
       });
       if (result.success) {
         showToast(`✅ Joined! ${result.points ? `+${result.points} pts 🌱` : ''}`);
         if (result.points) addPoints(result.points);
+        // Refresh drives list to reflect updated participant count
+        loadDrives();
       } else {
         showToast(result.message || 'Could not join drive.');
       }

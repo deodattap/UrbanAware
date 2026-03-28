@@ -40,7 +40,163 @@ let quizMode = 'mcq'; // 'mcq' or 'scenario'
 document.addEventListener('DOMContentLoaded', () => {
   initModuleSelection();
   initQuizButtons();
+  initReportSection();  // inject report form on reportissue.html
 });
+
+// ─── REPORT FORM (active on reportissue.html) ─────────────────
+function initReportSection() {
+  if (!window.location.pathname.includes('reportissue')) return;
+
+  // Replace the hero section description to make it clear this is Report page
+  const heroDesc = document.querySelector('[data-purpose="hero-section"] p');
+  if (heroDesc) heroDesc.textContent = 'Report urban issues in your city — garbage, pollution, or traffic problems — and help make your community cleaner.';
+
+  // Find the content-display section and replace it with the report form
+  const contentDisplay = document.querySelector('[data-purpose="content-display"]');
+  if (!contentDisplay) return;
+
+  contentDisplay.innerHTML = `
+    <div class="flex items-center gap-4 mb-8">
+      <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-500 text-2xl">🚩</div>
+      <div>
+        <h2 class="text-3xl font-extrabold text-gray-800">Report an Issue</h2>
+        <p class="text-gray-500">Help improve your city by reporting problems</p>
+      </div>
+    </div>
+    <form id="ua-report-page-form" class="space-y-5" novalidate>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Issue Type *</label>
+          <select id="rp-type" required class="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-red-400 bg-white">
+            <option value="">Select type…</option>
+            <option value="garbage">🗑️ Waste Issue</option>
+            <option value="pollution">🔊 Noise Pollution</option>
+            <option value="traffic">🚦 Traffic Issue</option>
+            <option value="pollution">🌫️ Air Pollution</option>
+            <option value="garbage">💧 Water Issue</option>
+            <option value="garbage">🚯 Illegal Dumping</option>
+            <option value="traffic">🕳️ Road Damage</option>
+            <option value="pollution">💡 Street Light Problem</option>
+            <option value="garbage">📋 Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location *</label>
+          <input id="rp-location" type="text" required placeholder="e.g. MG Road, Bangalore"
+            class="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-red-400"/>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description *</label>
+        <textarea id="rp-description" rows="4" required placeholder="Describe the issue in detail…"
+          class="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-red-400 resize-none"></textarea>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Name</label>
+          <input id="rp-name" type="text" placeholder="Full name (optional)"
+            class="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-red-400"/>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact Email</label>
+          <input id="rp-contact" type="email" placeholder="email@example.com (optional)"
+            class="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-red-400"/>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Photo Evidence</label>
+        <input id="rp-image" type="file" accept="image/*"
+          class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-red-50 file:text-red-700 file:font-semibold hover:file:bg-red-100"/>
+      </div>
+      <div class="flex items-center gap-3">
+        <input id="rp-anon" type="checkbox" class="w-4 h-4 rounded text-red-500"/>
+        <label for="rp-anon" class="text-sm text-gray-600">Submit anonymously</label>
+      </div>
+      <div id="rp-error" class="hidden text-red-500 text-sm font-semibold p-3 bg-red-50 rounded-xl"></div>
+      <div id="rp-success" class="hidden text-green-700 font-semibold p-4 bg-green-50 border border-green-200 rounded-2xl text-center"></div>
+      <button type="submit" id="rp-submit"
+        class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-lg">
+        🚩 Submit Report
+      </button>
+    </form>`;
+
+  // Pre-fill name/email if logged in
+  const user = (typeof getUser === 'function') ? getUser() : null;
+  if (user) {
+    const n = document.getElementById('rp-name'); if (n && user.name) n.value = user.name;
+    const e = document.getElementById('rp-contact'); if (e && user.email) e.value = user.email;
+  }
+
+  document.getElementById('rp-anon').addEventListener('change', function() {
+    const fields = document.querySelectorAll('#rp-name, #rp-contact');
+    fields.forEach(f => { f.closest('div').style.opacity = this.checked ? '0.4' : '1'; });
+  });
+
+  document.getElementById('ua-report-page-form').addEventListener('submit', submitReportForm);
+
+  // Also hide the quiz section since this is the report page
+  const quizSection = document.getElementById('quiz-section');
+  if (quizSection) quizSection.classList.add('hidden');
+}
+
+async function submitReportForm(e) {
+  e.preventDefault();
+  const type        = document.getElementById('rp-type').value;
+  const location    = document.getElementById('rp-location').value.trim();
+  const description = document.getElementById('rp-description').value.trim();
+  const isAnon      = document.getElementById('rp-anon').checked;
+  const name        = document.getElementById('rp-name')?.value.trim();
+  const contact     = document.getElementById('rp-contact')?.value.trim();
+  const imageFile   = document.getElementById('rp-image')?.files[0];
+  const errEl       = document.getElementById('rp-error');
+  const successEl   = document.getElementById('rp-success');
+  const btn         = document.getElementById('rp-submit');
+
+  errEl.classList.add('hidden');
+  successEl.classList.add('hidden');
+
+  if (!type || !location || !description) {
+    errEl.textContent = 'Issue type, location and description are required.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.textContent = 'Submitting…'; btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('issueType', type);
+  fd.append('type', type);
+  fd.append('location', location);
+  fd.append('description', description);
+  fd.append('isAnonymous', isAnon);
+  if (!isAnon && name)    fd.append('reporterName', name);
+  if (!isAnon && contact) fd.append('reporterContact', contact);
+  if (imageFile)          fd.append('image', imageFile);
+
+  const token = localStorage.getItem('ua_token');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  let result;
+  try {
+    const res = await fetch(`${API}/report`, { method: 'POST', headers, body: fd });
+    result = await res.json();
+  } catch {
+    result = { success: false, message: 'Network error. Is the backend running?' };
+  }
+
+  if (result.success) {
+    successEl.textContent = `✅ Report submitted successfully! ${result.points ? `You earned +${result.points} sustainability points 🌱` : ''}`;
+    successEl.classList.remove('hidden');
+    document.getElementById('ua-report-page-form').reset();
+    if (result.points && typeof addPoints === 'function') addPoints(result.points);
+    if (typeof showToast === 'function') showToast(`Report submitted! ${result.points ? `+${result.points} pts 🌱` : ''}`);
+  } else {
+    errEl.textContent = result.message || 'Submission failed. Please try again.';
+    errEl.classList.remove('hidden');
+  }
+  btn.textContent = '🚩 Submit Report'; btn.disabled = false;
+}
 
 // ─── MODULE SELECTION ─────────────────────────────────────────
 function initModuleSelection() {
@@ -96,10 +252,32 @@ function updateContentDisplay(name, data) {
 
 // ─── QUIZ BUTTONS ─────────────────────────────────────────────
 function initQuizButtons() {
-  // Find quiz start button(s)
   document.querySelectorAll('button').forEach(btn => {
-    if (btn.classList.contains('btn-gradient') || btn.textContent.trim().includes('Take Quiz')) {
-      btn.addEventListener('click', () => startQuiz('mcq'));
+    const txt = btn.textContent.trim();
+    if (btn.classList.contains('btn-gradient') || txt.includes('Test Your Knowledge') || txt.includes('Take Quiz')) {
+      // Replace the single button with two side-by-side buttons
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col sm:flex-row gap-3 mt-2';
+      wrapper.innerHTML = `
+        <button id="ua-start-quiz-btn" class="flex-1 btn-gradient p-1 rounded-2xl shadow-lg shadow-blue-100 transition-transform active:scale-95">
+          <div class="bg-transparent text-white py-4 flex items-center justify-center gap-2 font-bold text-base">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            Start Quiz
+          </div>
+        </button>
+        <button id="ua-start-scenario-btn" class="flex-1 p-1 rounded-2xl border-2 border-purple-400 bg-purple-50 hover:bg-purple-100 transition-transform active:scale-95">
+          <div class="text-purple-700 py-4 flex items-center justify-center gap-2 font-bold text-base">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            Scenario Mode
+          </div>
+        </button>`;
+      btn.replaceWith(wrapper);
+      document.getElementById('ua-start-quiz-btn').addEventListener('click', () => startQuiz('mcq'));
+      document.getElementById('ua-start-scenario-btn').addEventListener('click', () => {
+        const quizSection = document.getElementById('quiz-section');
+        if (quizSection) { quizSection.classList.remove('hidden'); quizSection.scrollIntoView({ behavior: 'smooth' }); }
+        showLevelPicker();
+      });
     }
   });
 }
@@ -124,10 +302,182 @@ async function startQuiz(mode) {
     }
     loadMCQQuestion(0);
   } else {
-    loadScenario(0);
+    showLevelPicker();
   }
 }
 window.startQuiz = startQuiz;
+
+// Exposed so quiz.js and inline HTML onclick can call it directly
+window.showLevelPickerDirect = function() {
+  const quizSection = document.getElementById('quiz-section');
+  if (quizSection) { quizSection.classList.remove('hidden'); quizSection.scrollIntoView({ behavior: 'smooth' }); }
+  showLevelPicker();
+};
+
+// ─── LEVEL PICKER ─────────────────────────────────────────────
+function showLevelPicker() {
+  const container = document.getElementById('quiz-section');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="text-center mb-8">
+      <span class="bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest">🧠 Scenario Mode</span>
+      <h3 class="text-2xl font-bold mt-4 text-gray-800">Choose Difficulty</h3>
+      <p class="text-gray-500 mt-2 text-sm">Different levels award different points</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <button onclick="startScenarioLevel('easy')"
+        class="p-6 rounded-2xl bg-green-50 border-2 border-green-200 hover:border-green-500 hover:bg-green-100 transition text-left cursor-pointer">
+        <div class="text-2xl mb-2">🌱</div>
+        <div class="font-bold text-green-700 text-lg">Easy</div>
+        <div class="text-green-600 text-xs mt-1">Everyday actions · up to 10 pts</div>
+      </button>
+      <button onclick="startScenarioLevel('medium')"
+        class="p-6 rounded-2xl bg-amber-50 border-2 border-amber-200 hover:border-amber-500 hover:bg-amber-100 transition text-left cursor-pointer">
+        <div class="text-2xl mb-2">🌍</div>
+        <div class="font-bold text-amber-700 text-lg">Medium</div>
+        <div class="text-amber-600 text-xs mt-1">Community challenges · up to 20 pts</div>
+      </button>
+      <button onclick="startScenarioLevel('hard')"
+        class="p-6 rounded-2xl bg-red-50 border-2 border-red-200 hover:border-red-500 hover:bg-red-100 transition text-left cursor-pointer">
+        <div class="text-2xl mb-2">🔥</div>
+        <div class="font-bold text-red-700 text-lg">Hard</div>
+        <div class="text-red-600 text-xs mt-1">Policy & systems · up to 30 pts</div>
+      </button>
+    </div>
+    <div class="text-center">
+      <button onclick="startQuiz('mcq')" class="text-gray-400 text-sm hover:text-gray-600 transition">← Back to MCQ Quiz</button>
+    </div>`;
+}
+window.showLevelPicker = showLevelPicker;
+
+window.startScenarioLevel = async function(level) {
+  const container = document.getElementById('quiz-section');
+  container.innerHTML = `<div class="text-center py-10 text-gray-400"><p class="text-lg">Loading scenario…</p></div>`;
+
+  let scenarioId, scenarioText;
+  try {
+    const res = await fetch(`${API}/quiz/scenario`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('ua_token') ? { Authorization: `Bearer ${localStorage.getItem('ua_token')}` } : {}) },
+      body: JSON.stringify({ level })
+    });
+    const json = await res.json();
+    if (json.success && json.scenario) {
+      scenarioId   = json.scenario.id;
+      scenarioText = json.scenario.scenario;
+    }
+  } catch (e) {}
+
+  // Fallback to local scenario if backend unreachable
+  if (!scenarioText) {
+    scenarioText = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+  }
+
+  const maxPts = { easy: 10, medium: 20, hard: 30 }[level] || 20;
+  const levelColors = { easy: 'green', medium: 'amber', hard: 'red' };
+  const c = levelColors[level] || 'purple';
+
+  container.innerHTML = `
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="bg-${c}-100 text-${c}-700 px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest">
+          🧠 ${level.charAt(0).toUpperCase() + level.slice(1)} Scenario
+        </span>
+        <span class="text-xs text-gray-400">Up to ${maxPts} points</span>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl mb-6">
+        <p class="text-gray-800 text-lg font-medium leading-relaxed">${scenarioText}</p>
+      </div>
+      <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Your Response</label>
+      <textarea id="scenario-answer" rows="5" placeholder="Describe what actions you would take and why..."
+        class="w-full p-4 border-2 border-gray-100 rounded-2xl focus:border-secondary outline-none text-sm leading-relaxed resize-none"
+        oninput="document.getElementById('scenario-counter').textContent = this.value.length + '/500'"></textarea>
+      <div class="flex justify-between text-xs text-gray-400 mt-1">
+        <span>Be specific and think about community impact</span>
+        <span id="scenario-counter">0/500</span>
+      </div>
+    </div>
+    <div class="flex justify-between items-center mt-6">
+      <button onclick="showLevelPicker()" class="text-gray-400 font-bold px-6 py-3 hover:text-gray-600 transition">← Change Level</button>
+      <button id="scenario-submit-btn"
+        class="bg-${c}-600 text-white px-10 py-4 rounded-2xl font-bold hover:opacity-90 transition">
+        Submit Answer ✨
+      </button>
+    </div>`;
+
+  document.getElementById('scenario-submit-btn').addEventListener('click', async () => {
+    const answer = document.getElementById('scenario-answer')?.value?.trim();
+    if (!answer || answer.length < 20) { showToast('Please write a more detailed response (at least 20 characters).'); return; }
+
+    const btn = document.getElementById('scenario-submit-btn');
+    btn.textContent = 'Evaluating…'; btn.disabled = true;
+
+    // Inform guest users their answer is evaluated locally (no points saved)
+    if (!localStorage.getItem('ua_token') && !localStorage.getItem('token')) {
+      if (typeof showToast === 'function') showToast('Log in to save your sustainability points! 🌱');
+    }
+
+    let evaluation, points;
+    try {
+      const payload = scenarioId
+        ? { level, scenarioId, answer }
+        : { level, answer };
+      const res = await fetch(`${API}/quiz/scenario`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('ua_token') ? { Authorization: `Bearer ${localStorage.getItem('ua_token')}` } : {}) },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (json.success) { evaluation = json.evaluation; points = json.points; }
+    } catch (e) {}
+
+    // Offline fallback
+    if (!evaluation) {
+      const words = answer.split(' ').length;
+      points = Math.min(maxPts, Math.max(1, Math.floor(words / 5)));
+      evaluation = {
+        score: points, maxScore: maxPts,
+        feedback: 'Your response shows thoughtfulness about urban sustainability challenges.',
+        correct_approach: 'Ideal answers include community engagement, official reporting, and sustainable alternatives.',
+        sustainability_tip: 'Document issues with photos and share on UrbanAware for community support.'
+      };
+    }
+
+    addPoints(points || evaluation.score || 5);
+    const sc = evaluation.score; const mx = evaluation.maxScore || maxPts;
+    const scoreColor = (sc / mx) >= 0.7 ? 'green' : (sc / mx) >= 0.4 ? 'amber' : 'red';
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <div class="text-center">
+          <div class="w-20 h-20 bg-${scoreColor}-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-2xl font-black text-${scoreColor}-600">${sc}/${mx}</span>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800">Evaluation Result</h3>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+          <p class="text-sm font-bold text-blue-700 mb-2">📋 Feedback</p>
+          <p class="text-gray-700 leading-relaxed">${evaluation.feedback}</p>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-2xl p-5">
+          <p class="text-sm font-bold text-green-700 mb-2">✅ Ideal Approach</p>
+          <p class="text-gray-700 leading-relaxed">${evaluation.correct_approach}</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <p class="text-sm font-bold text-amber-700 mb-2">💡 Tip</p>
+          <p class="text-gray-700 leading-relaxed">${evaluation.sustainability_tip}</p>
+        </div>
+        <div class="bg-purple-50 border border-purple-100 p-4 rounded-2xl text-center">
+          <p class="text-purple-700 font-bold">+${points || evaluation.score} Sustainability Points! 🌱</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+          <button onclick="startScenarioLevel('${level}')" class="bg-${c}-600 text-white px-8 py-4 rounded-2xl font-bold hover:opacity-90 transition">Try Another →</button>
+          <button onclick="showLevelPicker()" class="bg-white border-2 border-gray-200 text-gray-600 px-8 py-4 rounded-2xl font-bold hover:bg-gray-50 transition">Change Level</button>
+          <button onclick="startQuiz('mcq')" class="bg-white border-2 border-gray-200 text-gray-600 px-8 py-4 rounded-2xl font-bold hover:bg-gray-50 transition">Back to MCQ</button>
+        </div>
+      </div>`;
+  });
+};
 
 // ─── MCQ QUIZ ─────────────────────────────────────────────────
 function loadMCQQuestion(index) {

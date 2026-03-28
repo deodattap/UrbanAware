@@ -10,10 +10,12 @@ function getUser()  {
 }
 function setAuth(token, user) {
   localStorage.setItem('ua_token', token);
+  localStorage.setItem('token', token);          // compatibility alias
   localStorage.setItem('ua_user', JSON.stringify(user));
 }
 function clearAuth() {
   localStorage.removeItem('ua_token');
+  localStorage.removeItem('token');
   localStorage.removeItem('ua_user');
   localStorage.removeItem('ua_impact_score');
 }
