@@ -8,8 +8,17 @@ const mongoose = require('mongoose');
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5500')
+  .split(',')
+  .map(s => s.trim());
+
 app.use(cors({
-  origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, Postman, mobile apps)
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -19,18 +28,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ─── Routes ──────────────────────────────────────────────────
-app.use('/api/auth',    require('./routes/auth'));
-app.use('/api/drives',  require('./routes/drives'));
-app.use('/api/report',  require('./routes/report'));
-app.use('/api/user',    require('./routes/user'));
-app.use('/api/quiz',    require('./routes/quiz'));
-
-// Dashboard route is optional (may not exist in all branches)
-try {
-  app.use('/api/dashboard', require('./routes/dashboard'));
-} catch (e) {
-  console.warn('⚠️  dashboard route not found — skipping.');
-}
+app.use('/api/auth',      require('./routes/auth'));
+app.use('/api/drives',    require('./routes/drives'));
+app.use('/api/report',    require('./routes/report'));
+app.use('/api/user',      require('./routes/user'));
+app.use('/api/quiz',      require('./routes/quiz'));
+app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Health check
 app.get('/api/health', (req, res) =>
@@ -68,7 +71,6 @@ mongoose
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
-    // Start server anyway so health check still responds
     app.listen(PORT, () =>
       console.log(`⚠️  Server running WITHOUT DB on http://localhost:${PORT}`)
     );
