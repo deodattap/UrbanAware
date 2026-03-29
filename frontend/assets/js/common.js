@@ -4,7 +4,7 @@ const API_BASE = 'http://localhost:3001/api';
 
 // ─── AUTH HELPERS ─────────────────────────────────────────────
 function getToken() { return localStorage.getItem('ua_token') || localStorage.getItem('token'); }
-function getUser()  {
+function getUser() {
   try { return JSON.parse(localStorage.getItem('ua_user') || 'null'); }
   catch { return null; }
 }
@@ -28,7 +28,7 @@ async function apiRequest(endpoint, options = {}) {
   try {
     const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
     return res.json();
-  } catch (e) {
+  } catch {
     return { success: false, message: 'Network error. Please check if the backend is running.' };
   }
 }
@@ -47,17 +47,19 @@ function setupNavigation() {
   document.querySelectorAll('nav a, header nav a').forEach(link => {
     const href = link.getAttribute('href');
     if (!href || href.startsWith('#')) return;
-    if (href === currentPage) link.classList.add('nav-link-active');
-    link.addEventListener('click', (e) => {
-      if (href && !href.startsWith('#')) {
+    if (href === currentPage) {
+      link.classList.add('nav-link-active');
+      link.style.color = '#2563eb';
+      link.style.fontWeight = '700';
+    }
+    link.addEventListener('click', e => {
+      if (!href.startsWith('#')) {
         e.preventDefault();
         document.body.style.opacity = '0';
-        setTimeout(() => { window.location.href = href; }, 250);
+        setTimeout(() => { window.location.href = href; }, 200);
       }
     });
   });
-  const logo = document.querySelector('[data-purpose="logo"]');
-  if (logo) { logo.style.cursor = 'pointer'; logo.addEventListener('click', () => { window.location.href = 'home.html'; }); }
 }
 
 // ─── AUTH SLOT INJECTION ──────────────────────────────────────
@@ -68,16 +70,10 @@ function injectAuthSlot() {
     slot.appendChild(buildAuthButton());
     return;
   }
-  // Fallback for any page missing the slot
-  const targets = [
-    document.querySelector('header'),
-    document.querySelector('nav > div > div'),
-    document.querySelector('nav'),
-  ].filter(Boolean);
-  for (const t of targets) {
-    if (t.querySelector('.ua-auth-wrapper')) continue;
-    t.appendChild(buildAuthButton());
-    break;
+  // Fallback
+  const container = document.querySelector('header') || document.querySelector('nav');
+  if (container && !container.querySelector('.ua-auth-wrapper')) {
+    container.appendChild(buildAuthButton());
   }
 }
 
@@ -85,34 +81,136 @@ function buildAuthButton() {
   const user = getUser();
   const wrapper = document.createElement('div');
   wrapper.className = 'ua-auth-wrapper flex items-center gap-2 flex-shrink-0';
+
   if (isLoggedIn() && user) {
-    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'UA';
+    const initials = user.name
+      ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+      : 'UA';
     wrapper.innerHTML = `
-      <span class="text-sm font-semibold text-gray-600 hidden sm:block" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(user.name || '')}</span>
-      <button onclick="window.location.href='profile.html'"
-        style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#3b82f6);color:#fff;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);cursor:pointer;flex-shrink:0"
-        title="Profile (${escHtml(user.name || '')})">${initials}</button>
-      <button onclick="handleLogout()"
-        style="padding:4px 10px;font-size:12px;font-weight:600;color:#6b7280;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer;background:#fff;transition:all .2s"
-        title="Logout">Logout</button>`;
+      <button id="ua-avatar-btn" onclick="openProfileModal()"
+        style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#3b82f6);color:#fff;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;flex-shrink:0;transition:transform .15s"
+        onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'"
+        title="View Profile">${initials}</button>`;
   } else {
     wrapper.innerHTML = `
       <button onclick="openAuthModal('login')"
-        style="padding:7px 16px;background:linear-gradient(135deg,#22c55e,#3b82f6);color:#fff;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(0,0,0,.15)"
+        style="padding:8px 18px;background:linear-gradient(135deg,#22c55e,#3b82f6);color:#fff;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:opacity .15s"
+        onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'"
         title="Login">Login</button>`;
   }
   return wrapper;
 }
 
-function escHtml(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ─── LOGOUT ───────────────────────────────────────────────────
 window.handleLogout = function() {
   clearAuth();
+  const modal = document.getElementById('ua-profile-modal');
+  if (modal) modal.classList.remove('active');
   showToast('Logged out. See you soon! 👋');
   setTimeout(() => location.reload(), 700);
+};
+
+// ─── PROFILE MODAL ────────────────────────────────────────────
+window.openProfileModal = async function() {
+  let overlay = document.getElementById('ua-profile-modal');
+
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'ua-profile-modal';
+    overlay.className = 'modal-overlay';
+    overlay.style.cssText = 'z-index:10001;';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  }
+
+  const user = getUser();
+  const initials = user && user.name
+    ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'UA';
+
+  // Render skeleton immediately so modal opens fast
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:460px;padding:0;overflow:hidden;border-radius:24px;">
+      <!-- Header band -->
+      <div style="background:linear-gradient(135deg,#22c55e,#3b82f6);padding:28px 28px 48px;position:relative;">
+        <button onclick="document.getElementById('ua-profile-modal').classList.remove('active')"
+          style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.25);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;">✕</button>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.25);border:3px solid rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;">
+            ${initials}
+          </div>
+          <div>
+            <div style="color:#fff;font-weight:800;font-size:20px;">${escHtml(user?.name || 'User')}</div>
+            <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:2px;">${escHtml(user?.email || '')}</div>
+          </div>
+        </div>
+      </div>
+      <!-- Stats area -->
+      <div id="ua-profile-stats" style="padding:0 28px 28px;margin-top:-28px;">
+        <!-- Badge pill pulled up over the header -->
+        <div id="ua-profile-badge" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid #e2e8f0;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;color:#475569;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          🌱 Loading…
+        </div>
+        <!-- Score row -->
+        <div id="ua-profile-score-row" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <span style="font-size:13px;font-weight:600;color:#166534;">Sustainability Score</span>
+          <span id="ua-profile-score" style="font-size:28px;font-weight:900;color:#16a34a;">—</span>
+        </div>
+        <!-- Stat grid -->
+        <div id="ua-profile-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+          ${['Drives Joined','Drives Hosted','Reports'].map(label => `
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px 10px;text-align:center;">
+              <div class="ua-stat-val" style="font-size:24px;font-weight:800;color:#1e293b;">—</div>
+              <div style="font-size:11px;color:#64748b;margin-top:4px;font-weight:600;">${label}</div>
+            </div>`).join('')}
+        </div>
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;">
+          <a href="dashboard.html"
+            style="flex:1;padding:12px;background:#3b82f6;color:#fff;border-radius:14px;font-weight:700;font-size:13px;text-align:center;text-decoration:none;transition:opacity .15s"
+            onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">📊 Dashboard</a>
+          <button onclick="handleLogout()"
+            style="flex:1;padding:12px;background:#fff;color:#ef4444;border:2px solid #fee2e2;border-radius:14px;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s"
+            onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">Logout</button>
+        </div>
+      </div>
+    </div>`;
+
+  overlay.classList.add('active');
+
+  // Fetch live stats
+  if (isLoggedIn()) {
+    try {
+      const data = await apiRequest('/dashboard/stats');
+      if (data.success) {
+        const s = data.stats;
+        const badge = s.badge || getBadge(s.totalScore);
+
+        const badgeEl = document.getElementById('ua-profile-badge');
+        if (badgeEl) badgeEl.textContent = '🌱 ' + badge;
+
+        const scoreEl = document.getElementById('ua-profile-score');
+        if (scoreEl) scoreEl.textContent = (s.totalScore || 0).toLocaleString();
+
+        const vals = document.querySelectorAll('#ua-profile-modal .ua-stat-val');
+        if (vals[0]) vals[0].textContent = s.totalDrivesJoined ?? '0';
+        if (vals[1]) vals[1].textContent = s.totalDrivesHosted ?? '0';
+        if (vals[2]) vals[2].textContent = s.totalReports ?? '0';
+
+        // Sync score locally
+        if (s.totalScore !== undefined) {
+          localStorage.setItem('ua_impact_score', s.totalScore);
+          updateScoreDisplay(s.totalScore);
+        }
+      }
+    } catch { /* keep skeleton values */ }
+  }
 };
 
 // ─── AUTH MODAL ───────────────────────────────────────────────
@@ -135,11 +233,11 @@ function openAuthModal(defaultTab = 'login') {
       </div>
       <div id="auth-form-login">
         <form onsubmit="handleLogin(event)" class="space-y-4">
-          <input id="login-email" type="email" placeholder="Email address" required
+          <input id="login-email" type="email" placeholder="Email address" required autocomplete="email"
             class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
-          <input id="login-password" type="password" placeholder="Password" required
+          <input id="login-password" type="password" placeholder="Password" required autocomplete="current-password"
             class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
-          <div id="login-error" class="hidden text-red-500 text-sm font-semibold rounded-lg bg-red-50 px-3 py-2"></div>
+          <div id="login-error" class="hidden text-red-600 text-sm font-semibold rounded-lg bg-red-50 px-3 py-2"></div>
           <button type="submit" id="login-btn"
             class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-all">Login</button>
           <p class="text-center text-xs text-slate-400">No account? <button type="button" onclick="switchAuthTab('signup')" class="text-green-600 font-bold">Sign up</button></p>
@@ -147,13 +245,13 @@ function openAuthModal(defaultTab = 'login') {
       </div>
       <div id="auth-form-signup" class="hidden">
         <form onsubmit="handleSignup(event)" class="space-y-4">
-          <input id="signup-name" type="text" placeholder="Full name" required
+          <input id="signup-name" type="text" placeholder="Full name" required autocomplete="name"
             class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
-          <input id="signup-email" type="email" placeholder="Email address" required
+          <input id="signup-email" type="email" placeholder="Email address" required autocomplete="email"
             class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
-          <input id="signup-password" type="password" placeholder="Password (min 6 chars)" required minlength="6"
+          <input id="signup-password" type="password" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="new-password"
             class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
-          <div id="signup-error" class="hidden text-red-500 text-sm font-semibold rounded-lg bg-red-50 px-3 py-2"></div>
+          <div id="signup-error" class="hidden text-red-600 text-sm font-semibold rounded-lg bg-red-50 px-3 py-2"></div>
           <button type="submit" id="signup-btn"
             class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-all">Create Account</button>
           <p class="text-center text-xs text-slate-400">Have an account? <button type="button" onclick="switchAuthTab('login')" class="text-green-600 font-bold">Login</button></p>
@@ -186,14 +284,19 @@ window.switchAuthTab = function(tab) {
 
 window.handleLogin = async function(e) {
   e.preventDefault();
-  const btn   = document.getElementById('login-btn');
+  const btn = document.getElementById('login-btn');
   const errEl = document.getElementById('login-error');
   errEl.classList.add('hidden');
   btn.textContent = 'Logging in…'; btn.disabled = true;
+
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
   const result = await apiRequest('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email: document.getElementById('login-email').value.trim(), password: document.getElementById('login-password').value })
+    body: JSON.stringify({ email, password })
   });
+
   if (result.success) {
     setAuth(result.token, result.user);
     if (result.user.score !== undefined) localStorage.setItem('ua_impact_score', result.user.score);
@@ -209,14 +312,20 @@ window.handleLogin = async function(e) {
 
 window.handleSignup = async function(e) {
   e.preventDefault();
-  const btn   = document.getElementById('signup-btn');
+  const btn = document.getElementById('signup-btn');
   const errEl = document.getElementById('signup-error');
   errEl.classList.add('hidden');
   btn.textContent = 'Creating account…'; btn.disabled = true;
+
   const result = await apiRequest('/auth/signup', {
     method: 'POST',
-    body: JSON.stringify({ name: document.getElementById('signup-name').value.trim(), email: document.getElementById('signup-email').value.trim(), password: document.getElementById('signup-password').value })
+    body: JSON.stringify({
+      name:     document.getElementById('signup-name').value.trim(),
+      email:    document.getElementById('signup-email').value.trim(),
+      password: document.getElementById('signup-password').value
+    })
   });
+
   if (result.success) {
     setAuth(result.token, result.user);
     if (result.user.score !== undefined) localStorage.setItem('ua_impact_score', result.user.score);
@@ -248,13 +357,19 @@ window.showToast = showToast;
 
 // ─── SCORE ────────────────────────────────────────────────────
 function initUserImpactScore() {
-  let score = localStorage.getItem('ua_impact_score') || 0;
+  const score = localStorage.getItem('ua_impact_score') || 0;
   updateScoreDisplay(score);
 }
 function updateScoreDisplay(score) {
-  document.querySelectorAll('.sustainability-score-value').forEach(el => { el.textContent = parseInt(score).toLocaleString(); });
-  document.querySelectorAll('.sustainability-badge').forEach(el => { el.textContent = getBadge(score); });
-  document.querySelectorAll('.sustainability-progress-bar').forEach(bar => { bar.style.width = `${Math.min((score / 5000) * 100, 100)}%`; });
+  document.querySelectorAll('.sustainability-score-value').forEach(el => {
+    el.textContent = parseInt(score).toLocaleString();
+  });
+  document.querySelectorAll('.sustainability-badge').forEach(el => {
+    el.textContent = getBadge(score);
+  });
+  document.querySelectorAll('.sustainability-progress-bar').forEach(bar => {
+    bar.style.width = `${Math.min((score / 5000) * 100, 100)}%`;
+  });
 }
 function getBadge(score) {
   if (score >= 3000) return 'Eco Champion';
@@ -270,12 +385,12 @@ async function addPoints(points) {
   updateScoreDisplay(score);
   showToast(`+${points} Sustainability Points! 🌱`);
   if (isLoggedIn()) {
-    try { await apiRequest('/user/score', { method: 'POST', body: JSON.stringify({ points }) }); } catch(e) {}
+    try { await apiRequest('/user/score', { method: 'POST', body: JSON.stringify({ points }) }); } catch { }
   }
 }
 window.addPoints = addPoints;
 
-// ─── GENERIC MODAL ────────────────────────────────────────────
+// ─── GENERIC CONFIRM MODAL ────────────────────────────────────
 function showModal(title, content, onConfirm) {
   let overlay = document.getElementById('ua-generic-modal');
   if (!overlay) {

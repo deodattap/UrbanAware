@@ -7,10 +7,10 @@ const { updateUserScore, POINTS }          = require('../utils/scoring');
 const { sendEmail, driveJoinConfirmation } = require('../utils/email');
 
 // ─── GET /api/drives ──────────────────────────────────────────
-// List all active/approved drives (public)
+// List all drives (public)
 router.get('/', async (req, res) => {
   try {
-    const drives = await Drive.find({ status: { $in: ['active', 'approved'] } })
+    const drives = await Drive.find({ status: { $in: ['active', 'approved', 'pending'] } })
       .select('-participants')
       .populate('host', 'name email avatar')
       .sort({ date: 1 });
@@ -45,7 +45,7 @@ router.post('/host', protect, async (req, res) => {
       participants:     [req.user._id],     // host is first participant
       participantCount: 1,
       isCustom:         true,
-      status:           'pending'
+      status:           'active'
     });
 
     // Award points using the scoring system
@@ -71,7 +71,7 @@ router.post('/host', protect, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Drive submitted for review!',
+      message: 'Drive created successfully! It is now live.',
       driveId: drive._id,
       points:  POINTS.DRIVE_HOST
     });

@@ -113,7 +113,7 @@ function openJoinModal(driveId, driveName) {
 
   // Static/demo cards have no driveId — inform user gracefully
   if (!driveId) {
-    showToast('This is a demo drive. Real drives appear once approved by admins.');
+    showToast('This is a sample drive. Create your own using "Host a Drive"!');
     return;
   }
 
@@ -195,9 +195,9 @@ function openHostModal() {
         <div id="host-error" class="hidden text-red-500 text-sm font-semibold"></div>
         <button type="submit" id="host-submit"
           class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-all">
-          Submit Drive for Review
+          Create Drive
         </button>
-        <p class="text-center text-xs text-gray-400">Drives are reviewed before going live (+25 pts on approval)</p>
+        <p class="text-center text-xs text-gray-400">Your drive goes live immediately and earns points!</p>
       </form>
     </div>`;
 
@@ -240,12 +240,12 @@ function openHostModal() {
 
     if (result.success) {
       overlay.classList.remove('active');
-      showToast(`🎉 Drive submitted for review! ${result.points ? `+${result.points} pts 🌱` : ''}`);
+      showToast(`🎉 Drive is now live! ${result.points ? `+${result.points} pts 🌱` : ''}`);
       if (result.points) addPoints(result.points);
     } else {
       errEl.textContent = result.message || 'Submission failed.';
       errEl.classList.remove('hidden');
-      btn.textContent = 'Submit Drive for Review';
+      btn.textContent = 'Create Drive';
       btn.disabled = false;
     }
   });

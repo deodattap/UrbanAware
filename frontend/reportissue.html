@@ -62,47 +62,24 @@
 </head>
 <body class="text-urban-text">
 <!-- BEGIN: MainHeader -->
-<header class="bg-white border-b border-gray-100 sticky top-0 z-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between items-center h-16">
-<!-- Logo -->
-<div class="flex items-center gap-2">
-<div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-white font-bold text-xl">UA</div>
-<div>
-<h1 class="font-bold text-lg leading-tight">UrbanAware</h1>
-<p class="text-[10px] text-urban-muted uppercase tracking-wider">Smart City Platform</p>
-</div>
-</div>
-<!-- Navigation -->
-<nav class="hidden md:flex space-x-8 items-center">
-<a class="text-urban-muted hover:text-secondary flex items-center gap-1 transition-colors" href="home.html">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Home
-          </a>
-<a class="text-urban-muted hover:text-secondary flex items-center gap-1 transition-colors" href="dashboard.html">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Dashboard
-          </a>
-<a class="bg-primary/10 text-primary font-semibold px-4 py-2 rounded-full flex items-center gap-1" href="learn.html">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.246.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.246.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Learn
-          </a>
-<a class="text-urban-muted hover:text-secondary flex items-center gap-1 transition-colors" href="drives.html">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Drives
-          </a>
+<nav class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">UA</div>
+        <span class="font-bold text-lg tracking-tight">UrbanAware</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+        <a class="hover:text-blue-600 transition-colors" href="home.html">Home</a>
+        <a class="hover:text-blue-600 transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="hover:text-blue-600 transition-colors" href="learn.html">Learn</a>
+        <a class="hover:text-blue-600 transition-colors" href="drives.html">Drives</a>
+        <a class="hover:text-blue-600 transition-colors" href="reportissue.html">Report Issue</a>
+      </div>
+      <div id="ua-nav-auth-slot" class="flex items-center gap-2 flex-shrink-0"></div>
+    </div>
+  </div>
 </nav>
-<!-- Profile/Report -->
-<div class="flex items-center gap-4">
-<a class="text-urban-muted hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium" href="reportissue.html">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Report Issue
-          </a>
-<div id="ua-nav-auth-slot" class="flex items-center gap-2"></div>
-</div>
-</div>
-</div>
-</header>
 <!-- END: MainHeader -->
 <main class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
 <!-- BEGIN: HeroSection -->

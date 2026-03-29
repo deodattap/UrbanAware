@@ -22,7 +22,7 @@ const driveSchema = new mongoose.Schema({
 
   participantCount: { type: Number, default: 0 },
   isCustom: { type: Boolean, default: false },
-  status:   { type: String, enum: ['pending', 'approved', 'active'], default: 'pending' },
+  status:   { type: String, enum: ['pending', 'approved', 'active'], default: 'active' },
   createdAt: { type: Date, default: Date.now }
 });
 
