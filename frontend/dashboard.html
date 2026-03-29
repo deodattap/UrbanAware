@@ -6,6 +6,8 @@
 <title>UrbanAware - Urban Dashboard</title>
 <!-- Tailwind CSS v3 CDN -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Lottie CDN -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -84,6 +86,16 @@
   </style>
 </head>
 <body class="min-h-screen">
+  <!-- Lines background animation -->
+  <div style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:0.50;">
+    <lottie-player
+      src="assets/animation/lines.json"
+      background="transparent"
+      speed="0.7"
+      style="width:100%;height:100%;object-fit:cover;"
+      loop autoplay>
+    </lottie-player>
+  </div>
 <!-- BEGIN: MainHeader -->
 <nav class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -104,7 +116,7 @@
   </div>
 </nav>
 <!-- END: MainHeader -->
-<main class="max-w-7xl mx-auto px-4 py-8">
+<main class="max-w-7xl mx-auto px-4 py-8" style="position:relative;z-index:1;">
 <!-- BEGIN: HeroSection -->
 <div class="text-center mb-10" data-purpose="hero-section">
 <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-ua-green rounded-full text-xs font-bold mb-4">
