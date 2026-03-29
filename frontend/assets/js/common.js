@@ -86,11 +86,15 @@ function buildAuthButton() {
     const initials = user.name
       ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
       : 'UA';
+    const savedAvatar = localStorage.getItem('ua_profile_avatar') || '';
+    const avatarStyle = savedAvatar
+      ? `background-image:url('${savedAvatar}');background-size:cover;background-position:center;`
+      : `background:linear-gradient(135deg,#22c55e,#3b82f6);`;
     wrapper.innerHTML = `
       <button id="ua-avatar-btn" onclick="openProfileModal()"
-        style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#3b82f6);color:#fff;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;flex-shrink:0;transition:transform .15s"
+        style="width:36px;height:36px;border-radius:50%;${avatarStyle}color:#fff;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;flex-shrink:0;transition:transform .15s"
         onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'"
-        title="View Profile">${initials}</button>`;
+        title="View Profile">${savedAvatar ? '' : initials}</button>`;
   } else {
     wrapper.innerHTML = `
       <button onclick="openAuthModal('login')"
@@ -134,50 +138,108 @@ window.openProfileModal = async function() {
     ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : 'UA';
 
-  // Render skeleton immediately so modal opens fast
+  const savedAvatar = localStorage.getItem('ua_profile_avatar') || '';
+  const avatarHtml = savedAvatar
+    ? `<img src="${savedAvatar}" id="ua-avatar-img" style="width:88px;height:88px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,.85);box-shadow:0 4px 16px rgba(0,0,0,.18);" />`
+    : `<div id="ua-avatar-initials" style="width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.25);border:4px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:28px;letter-spacing:1px;">${initials}</div>`;
+
+  const QUOTES = [
+    '🌱 Small actions today create a sustainable tomorrow.',
+    '🌍 The Earth does not belong to us — we belong to the Earth.',
+    '♻️ Be the change you wish to see in the environment.',
+    '💧 Every drop counts. Every action matters.',
+    '🌿 Sustainability is not a destination, it\'s a journey.'
+  ];
+  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+
   overlay.innerHTML = `
-    <div class="modal-content" style="max-width:460px;padding:0;overflow:hidden;border-radius:24px;">
-      <!-- Header band -->
-      <div style="background:linear-gradient(135deg,#22c55e,#3b82f6);padding:28px 28px 48px;position:relative;">
+    <div class="modal-content" style="max-width:480px;padding:0;overflow:hidden;border-radius:28px;box-shadow:0 24px 60px rgba(0,0,0,.18);max-height:90vh;display:flex;flex-direction:column;">
+
+      <!-- ── HEADER BAND ── -->
+      <div style="background:linear-gradient(135deg,#22c55e,#3b82f6);padding:32px 28px 60px;position:relative;text-align:center;flex-shrink:0;">
         <button onclick="document.getElementById('ua-profile-modal').classList.remove('active')"
-          style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.25);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;">✕</button>
-        <div style="display:flex;align-items:center;gap:16px;">
-          <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.25);border:3px solid rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;">
-            ${initials}
+          style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.22);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+
+        <!-- Avatar -->
+        <div style="position:relative;display:inline-block;margin-bottom:12px;">
+          <div id="ua-avatar-wrap" style="cursor:pointer;" onclick="document.getElementById('ua-avatar-file').click()" title="Change photo">
+            ${avatarHtml}
+            <div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.18);font-size:13px;">📷</div>
           </div>
-          <div>
-            <div style="color:#fff;font-weight:800;font-size:20px;">${escHtml(user?.name || 'User')}</div>
-            <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:2px;">${escHtml(user?.email || '')}</div>
-          </div>
+          <input type="file" id="ua-avatar-file" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)" />
         </div>
+
+        <!-- Name & Email -->
+        <div style="color:#fff;font-weight:800;font-size:22px;letter-spacing:.2px;">${escHtml(user?.name || 'User')}</div>
+        <div style="color:rgba(255,255,255,.78);font-size:13px;margin-top:4px;">✉️ ${escHtml(user?.email || '')}</div>
       </div>
-      <!-- Stats area -->
-      <div id="ua-profile-stats" style="padding:0 28px 28px;margin-top:-28px;">
-        <!-- Badge pill pulled up over the header -->
-        <div id="ua-profile-badge" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid #e2e8f0;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;color:#475569;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          🌱 Loading…
+
+      <!-- ── BODY ── -->
+      <div style="padding:0 24px 24px;margin-top:-36px;overflow-y:auto;flex:1;">
+
+        <!-- Badge pill -->
+        <div style="text-align:center;margin-bottom:18px;">
+          <span id="ua-profile-badge" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid #e2e8f0;border-radius:999px;padding:7px 18px;font-size:13px;font-weight:700;color:#475569;box-shadow:0 2px 10px rgba(0,0,0,.09);">🏆 Loading…</span>
         </div>
+
+        <!-- SECTION 1 header -->
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-left:2px;">📊 Your Stats</div>
+
         <!-- Score row -->
-        <div id="ua-profile-score-row" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <span style="font-size:13px;font-weight:600;color:#166534;">Sustainability Score</span>
-          <span id="ua-profile-score" style="font-size:28px;font-weight:900;color:#16a34a;">—</span>
+        <div style="background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:1px solid #bbf7d0;border-radius:18px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#166534;">🌟 Sustainability Score</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:2px;">Keep growing!</div>
+          </div>
+          <span id="ua-profile-score" style="font-size:32px;font-weight:900;color:#16a34a;letter-spacing:-1px;">—</span>
         </div>
-        <!-- Stat grid -->
-        <div id="ua-profile-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
-          ${['Drives Joined','Drives Hosted','Reports'].map(label => `
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px 10px;text-align:center;">
-              <div class="ua-stat-val" style="font-size:24px;font-weight:800;color:#1e293b;">—</div>
-              <div style="font-size:11px;color:#64748b;margin-top:4px;font-weight:600;">${label}</div>
-            </div>`).join('')}
+
+        <!-- Stat grid — 3 cols row 1 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px 8px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:4px;">🚗</div>
+            <div class="ua-stat-val" style="font-size:22px;font-weight:800;color:#1e293b;">—</div>
+            <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:600;">Drives Joined</div>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px 8px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:4px;">📍</div>
+            <div class="ua-stat-val" style="font-size:22px;font-weight:800;color:#1e293b;">—</div>
+            <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:600;">Drives Hosted</div>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px 8px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:4px;">📝</div>
+            <div class="ua-stat-val" style="font-size:22px;font-weight:800;color:#1e293b;">—</div>
+            <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:600;">Reports</div>
+          </div>
         </div>
+
+        <!-- Stat grid — 2 cols row 2 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px 10px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:4px;">🧠</div>
+            <div class="ua-stat-val" style="font-size:22px;font-weight:800;color:#1e293b;">—</div>
+            <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:600;">Quiz Points</div>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px 10px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:4px;">🎯</div>
+            <div class="ua-stat-val" style="font-size:22px;font-weight:800;color:#1e293b;">—</div>
+            <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:600;">Scenario Score</div>
+          </div>
+        </div>
+
+        <!-- Motivational quote -->
+        <div style="background:linear-gradient(135deg,#f0fdf4,#eff6ff);border-left:4px solid #22c55e;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:#374151;font-style:italic;line-height:1.6;">
+          ${quote}
+        </div>
+
         <!-- Actions -->
         <div style="display:flex;gap:10px;">
           <a href="dashboard.html"
-            style="flex:1;padding:12px;background:#3b82f6;color:#fff;border-radius:14px;font-weight:700;font-size:13px;text-align:center;text-decoration:none;transition:opacity .15s"
+            style="flex:1;padding:13px;background:linear-gradient(135deg,#3b82f6,#22c55e);color:#fff;border-radius:14px;font-weight:700;font-size:13px;text-align:center;text-decoration:none;transition:opacity .15s;"
             onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">📊 Dashboard</a>
           <button onclick="handleLogout()"
-            style="flex:1;padding:12px;background:#fff;color:#ef4444;border:2px solid #fee2e2;border-radius:14px;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s"
-            onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">Logout</button>
+            style="flex:1;padding:13px;background:#fff;color:#ef4444;border:2px solid #fee2e2;border-radius:14px;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s;"
+            onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">🚪 Logout</button>
         </div>
       </div>
     </div>`;
@@ -193,7 +255,7 @@ window.openProfileModal = async function() {
         const badge = s.badge || getBadge(s.totalScore);
 
         const badgeEl = document.getElementById('ua-profile-badge');
-        if (badgeEl) badgeEl.textContent = '🌱 ' + badge;
+        if (badgeEl) badgeEl.textContent = '🏆 ' + badge;
 
         const scoreEl = document.getElementById('ua-profile-score');
         if (scoreEl) scoreEl.textContent = (s.totalScore || 0).toLocaleString();
@@ -202,8 +264,9 @@ window.openProfileModal = async function() {
         if (vals[0]) vals[0].textContent = s.totalDrivesJoined ?? '0';
         if (vals[1]) vals[1].textContent = s.totalDrivesHosted ?? '0';
         if (vals[2]) vals[2].textContent = s.totalReports ?? '0';
+        if (vals[3]) vals[3].textContent = s.quizPoints ?? '0';
+        if (vals[4]) vals[4].textContent = s.scenarioScore ?? '0';
 
-        // Sync score locally
         if (s.totalScore !== undefined) {
           localStorage.setItem('ua_impact_score', s.totalScore);
           updateScoreDisplay(s.totalScore);
@@ -211,6 +274,43 @@ window.openProfileModal = async function() {
       }
     } catch { /* keep skeleton values */ }
   }
+};
+
+// ─── AVATAR UPLOAD HANDLER ────────────────────────────────────
+window.handleAvatarUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Please select a valid image file.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    localStorage.setItem('ua_profile_avatar', dataUrl);
+
+    // Update preview inside modal
+    const wrap = document.getElementById('ua-avatar-wrap');
+    if (wrap) {
+      const existing = wrap.querySelector('img,div#ua-avatar-initials');
+      if (existing) {
+        const img = document.createElement('img');
+        img.id = 'ua-avatar-img';
+        img.src = dataUrl;
+        img.style.cssText = 'width:88px;height:88px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,.85);box-shadow:0 4px 16px rgba(0,0,0,.18);';
+        existing.replaceWith(img);
+      }
+    }
+
+    // Update nav avatar button if exists
+    const navBtn = document.getElementById('ua-avatar-btn');
+    if (navBtn) {
+      navBtn.style.backgroundImage = `url('${dataUrl}')`;
+      navBtn.style.backgroundSize = 'cover';
+      navBtn.style.backgroundPosition = 'center';
+      navBtn.textContent = '';
+    }
+
+    showToast('Profile photo updated! 📸');
+  };
+  reader.readAsDataURL(file);
 };
 
 // ─── AUTH MODAL ───────────────────────────────────────────────
