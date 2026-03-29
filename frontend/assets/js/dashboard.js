@@ -502,3 +502,294 @@ function loadScript(src) {
     document.head.appendChild(s);
   });
 }
+
+// ─── FILTER SYSTEM + GRAPH SWITCHING ─────────────────────────
+// Track active metric filter ('aqi' | 'traffic' | 'temperature')
+let activeMetric = 'aqi';
+
+// Called once after DOM ready — wires filter buttons and hides waste card
+function initMetricFilter() {
+  // ── Remove Waste card (Part 2) ──────────────────────────────
+  const grid = document.querySelector('[data-purpose="metrics-grid"]');
+  if (grid) {
+    grid.querySelectorAll('div').forEach(card => {
+      const label = card.querySelector('p.uppercase');
+      if (label && label.textContent.trim() === 'Waste Collection') {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // ── Remove Waste Status button from filter row ──────────────
+  const filterRow = document.querySelector('[data-purpose="city-status"] .flex.flex-wrap');
+  if (!filterRow) return;
+
+  const buttons = filterRow.querySelectorAll('button');
+  // Map button text → metric key
+  const btnMap = {
+    'AQI Checker':  'aqi',
+    'Traffic Level': 'traffic',
+    'Temperature':   'temperature',
+    'Waste Status':  'waste'
+  };
+
+  buttons.forEach(btn => {
+    const text = btn.textContent.trim();
+    const key  = Object.keys(btnMap).find(k => text.includes(k));
+    if (!key) return;
+
+    if (key === 'waste') {
+      btn.style.display = 'none'; // remove Waste button (Part 2)
+      return;
+    }
+
+    btn.dataset.metric = btnMap[key];
+    btn.addEventListener('click', () => switchMetric(btn.dataset.metric));
+  });
+
+  // Set initial state (AQI active by default, all cards visible)
+  setActiveFilterBtn('aqi');
+  showAllMetricCards();
+}
+
+function switchMetric(metric) {
+  activeMetric = metric;
+  setActiveFilterBtn(metric);
+  filterMetricCards(metric);
+  updateChartForMetric(metric);
+}
+
+// Highlight the active button, reset others
+function setActiveFilterBtn(metric) {
+  const filterRow = document.querySelector('[data-purpose="city-status"] .flex.flex-wrap');
+  if (!filterRow) return;
+  filterRow.querySelectorAll('button[data-metric]').forEach(btn => {
+    const isActive = btn.dataset.metric === metric;
+    btn.className = isActive
+      ? 'bg-ua-blue text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-200'
+      : 'bg-gray-50 text-gray-500 px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-100';
+  });
+}
+
+// Show/hide metric cards based on selected metric
+const METRIC_CARD_LABELS = {
+  aqi:         'Air Quality Index',
+  traffic:     'Traffic Level',
+  temperature: 'Temperature'
+};
+
+function showAllMetricCards() {
+  const grid = document.querySelector('[data-purpose="metrics-grid"]');
+  if (!grid) return;
+  grid.querySelectorAll('div').forEach(card => {
+    const label = card.querySelector('p.uppercase');
+    if (!label) return;
+    const txt = label.textContent.trim();
+    if (txt === 'Waste Collection') return; // keep waste hidden always
+    card.style.display = '';
+    card.style.opacity = '1';
+  });
+}
+
+function filterMetricCards(metric) {
+  const targetLabel = METRIC_CARD_LABELS[metric];
+  const grid = document.querySelector('[data-purpose="metrics-grid"]');
+  if (!grid) return;
+
+  grid.querySelectorAll('div').forEach(card => {
+    const label = card.querySelector('p.uppercase');
+    if (!label) return;
+    const txt = label.textContent.trim();
+    if (txt === 'Waste Collection') return; // always hidden
+
+    if (!card.classList.contains('ua-user-stat')) {
+      // native metric cards — show only the selected one
+      const match = txt === targetLabel;
+      card.style.display    = match ? '' : 'none';
+      card.style.opacity    = match ? '1' : '0';
+    }
+  });
+}
+
+// ─── CHART UPDATE BY METRIC ───────────────────────────────────
+async function updateChartForMetric(metric) {
+  // Ensure Chart.js is loaded
+  if (typeof Chart === 'undefined') {
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
+  }
+
+  const chartWrapper = document.querySelector('.relative.h-64.w-full');
+  if (!chartWrapper) return;
+
+  // Ensure canvas exists
+  if (!document.getElementById('ua-aqi-chart')) {
+    chartWrapper.innerHTML = '<canvas id="ua-aqi-chart"></canvas>';
+  }
+
+  const ctx = document.getElementById('ua-aqi-chart')?.getContext('2d');
+  if (!ctx) return;
+
+  // Destroy old chart
+  if (aqiChart) { aqiChart.destroy(); aqiChart = null; }
+
+  const hours = ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm'];
+
+  let labels, values, color, bgColor, label, yMax, tooltipFn;
+
+  if (metric === 'aqi') {
+    // Fetch real AQI trend from backend
+    labels = hours;
+    values = [85, 100, 140, 156, 148, 130, 110, 90, 75, 80, 95, 115, 130, 118, 100, 85];
+    try {
+      const token   = typeof getToken === 'function' ? getToken() : localStorage.getItem('ua_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res  = await fetch(`${API_BASE_URL}/dashboard/aqi-trend`, { headers });
+      const json = await res.json();
+      if (json.success && json.labels && json.values) {
+        labels = json.labels;
+        values = json.values;
+      }
+    } catch (_) {}
+    color   = '#50C878';
+    bgColor = 'rgba(80,200,120,0.15)';
+    label   = 'AQI';
+    yMax    = 250;
+    tooltipFn = (c) => ` AQI: ${c.raw} (${getAqiStatus(c.raw)})`;
+
+  } else if (metric === 'traffic') {
+    // Realistic traffic mock: low at night, peaks morning + evening
+    labels = hours;
+    values = [20, 35, 65, 85, 70, 55, 60, 65, 58, 62, 72, 78, 88, 75, 60, 40];
+    color   = '#f97316';
+    bgColor = 'rgba(249,115,22,0.12)';
+    label   = 'Traffic (%)';
+    yMax    = 100;
+    tooltipFn = (c) => ` Traffic: ${c.raw}%`;
+
+  } else if (metric === 'temperature') {
+    // Temperature curve: cooler morning, peak afternoon
+    labels = hours;
+    values = [24, 24, 25, 27, 29, 31, 33, 34, 35, 35, 34, 33, 32, 31, 29, 27];
+    color   = '#f59e0b';
+    bgColor = 'rgba(245,158,11,0.12)';
+    label   = 'Temp (°C)';
+    yMax    = 45;
+    tooltipFn = (c) => ` Temp: ${c.raw}°C (${getTempStatus(c.raw)})`;
+  }
+
+  aqiChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data:            values,
+        borderColor:     color,
+        backgroundColor: bgColor,
+        borderWidth:     2.5,
+        fill:            true,
+        tension:         0.4,
+        pointRadius:     3,
+        pointBackgroundColor: color
+      }]
+    },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: tooltipFn } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
+        y: {
+          grid:  { color: '#f1f5f9' },
+          ticks: { font: { size: 10 }, color: '#94a3b8' },
+          suggestedMin: 0,
+          suggestedMax: yMax
+        }
+      }
+    }
+  });
+}
+
+// ─── PATCH MAP CLICK TO SYNC GRAPH ───────────────────────────
+// Override map click to also update the chart with location-specific data
+(function patchMapClickForGraph() {
+  const _initLeafletMap = initLeafletMap;
+  // Re-attach after map init by hooking into the existing leafletMap click
+  // We do this by wrapping the DOMContentLoaded order: initLeafletMap already
+  // runs, so we listen for our custom event fired after map is ready.
+  document.addEventListener('ua:mapReady', () => {
+    if (!leafletMap) return;
+    leafletMap.on('click', async (e) => {
+      const { lat, lng } = e.latlng;
+      const result = await fetchAqiForLocation(lat, lng);
+      // Inject realistic traffic + temp values based on the coord hash
+      const seed = Math.abs(Math.floor(lat * 100) * 397 + Math.floor(lng * 100) * 113);
+      const trafficVal = 20 + (seed % 70);
+      const tempVal    = Math.round(38 - Math.abs(lat - 10) * 0.4);
+
+      // Update chart for whichever metric is active
+      if (activeMetric === 'aqi') {
+        // Rebuild AQI chart with a location-shifted trend
+        if (aqiChart) { aqiChart.destroy(); aqiChart = null; }
+        const ctx = document.getElementById('ua-aqi-chart')?.getContext('2d');
+        if (ctx) {
+          const base = result.aqi;
+          const vals = Array.from({length:16}, (_, i) => Math.max(10, Math.min(300,
+            base + Math.round(Math.sin(i/3) * 25) + Math.floor(Math.random()*10))));
+          aqiChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm'],
+              datasets: [{ label:'AQI', data: vals, borderColor:'#50C878', backgroundColor:'rgba(80,200,120,0.15)',
+                borderWidth:2.5, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#50C878' }] },
+            options: { responsive:true, maintainAspectRatio:false,
+              plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>` AQI: ${c.raw} (${getAqiStatus(c.raw)})`}} },
+              scales:{ x:{grid:{display:false},ticks:{font:{size:10},color:'#94a3b8'}},
+                y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},color:'#94a3b8'},suggestedMin:0,suggestedMax:250} } }
+          });
+        }
+      } else if (activeMetric === 'traffic') {
+        const vals = Array.from({length:16}, (_, i) => Math.max(5, Math.min(100,
+          trafficVal + Math.round(Math.sin(i/2.5) * 20) + Math.floor(Math.random()*8))));
+        if (aqiChart) { aqiChart.destroy(); aqiChart = null; }
+        const ctx = document.getElementById('ua-aqi-chart')?.getContext('2d');
+        if (ctx) aqiChart = new Chart(ctx, {
+          type:'line', data:{ labels:['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm'],
+            datasets:[{label:'Traffic (%)',data:vals,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,0.12)',
+              borderWidth:2.5,fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#f97316'}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:(c)=>` Traffic: ${c.raw}%`}}},
+            scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#94a3b8'}},
+              y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},color:'#94a3b8'},suggestedMin:0,suggestedMax:100}}}
+        });
+      } else if (activeMetric === 'temperature') {
+        const vals = Array.from({length:16}, (_, i) => Math.max(15, Math.min(45,
+          tempVal - 5 + Math.round(i * 0.6) + Math.floor(Math.random()*2))));
+        if (aqiChart) { aqiChart.destroy(); aqiChart = null; }
+        const ctx = document.getElementById('ua-aqi-chart')?.getContext('2d');
+        if (ctx) aqiChart = new Chart(ctx, {
+          type:'line', data:{ labels:['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm'],
+            datasets:[{label:'Temp (°C)',data:vals,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.12)',
+              borderWidth:2.5,fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#f59e0b'}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:(c)=>` Temp: ${c.raw}°C`}}},
+            scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#94a3b8'}},
+              y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},color:'#94a3b8'},suggestedMin:0,suggestedMax:45}}}
+        });
+      }
+    });
+  });
+})();
+
+// ─── INIT FILTER ON DOM READY ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // initMetricFilter runs after existing DOMContentLoaded handlers
+  setTimeout(() => {
+    initMetricFilter();
+    // Signal map ready for graph sync (leafletMap is initialised by now)
+    document.dispatchEvent(new CustomEvent('ua:mapReady'));
+  }, 300);
+});
