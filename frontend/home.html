@@ -210,15 +210,44 @@
     </div>
   </section>
 
+  <!-- ── SUGGESTION SECTION ── -->
   <section class="py-24 relative z-10">
     <div class="container mx-auto px-6">
-      <div class="relative bg-brand-dark rounded-[3rem] p-12 md:p-20 overflow-hidden text-center md:text-left">
-        <div class="relative z-10 max-w-3xl">
-          <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">Ready to build the city of the future?</h2>
-          <p class="text-slate-300 text-lg mb-10">Start contributing to a more sustainable urban ecosystem.</p>
-          <div class="flex flex-wrap justify-center md:justify-start gap-4">
-            <button class="px-8 py-4 bg-white text-brand-dark rounded-2xl font-bold hover:bg-slate-100 transition-all">App Store</button>
-            <button class="px-8 py-4 bg-slate-800 text-white border border-slate-700 rounded-2xl font-bold hover:bg-slate-700 transition-all">Google Play</button>
+      <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-10">
+          <div class="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">💡 Community Voice</div>
+          <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3">Help Us Improve UrbanAware</h2>
+          <p class="text-slate-500 text-base">Your feedback shapes the future of sustainable urban living.</p>
+        </div>
+        <div class="bg-white rounded-[2rem] border border-slate-100 p-8 md:p-10 shadow-xl shadow-slate-100">
+          <div id="ua-suggestion-form-wrap">
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">👤 Your Name</label>
+                <input id="ua-sug-name" type="text" placeholder="e.g. Priya Sharma" maxlength="80"
+                  class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400 transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">✉️ Email Address</label>
+                <input id="ua-sug-email" type="email" placeholder="you@example.com" maxlength="120"
+                  class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400 transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">💬 Your Suggestion</label>
+                <textarea id="ua-sug-text" rows="4" placeholder="Share your idea, feedback, or feature request…" maxlength="600"
+                  class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400 transition-all resize-none"></textarea>
+              </div>
+              <div id="ua-sug-error" style="display:none;" class="text-red-600 text-sm font-semibold bg-red-50 rounded-xl px-4 py-2"></div>
+              <button onclick="submitSuggestion()" id="ua-sug-btn"
+                class="w-full py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-2xl font-bold text-base hover:opacity-90 transition-all shadow-lg">
+                Submit Suggestion 🚀
+              </button>
+            </div>
+          </div>
+          <div id="ua-suggestion-success" style="display:none; text-align:center; padding:32px 0;">
+            <div style="font-size:56px; margin-bottom:12px;">✅</div>
+            <div style="font-size:20px; font-weight:800; color:#16a34a; margin-bottom:8px;">Thank you for your suggestion!</div>
+            <div style="font-size:14px; color:#64748b;">We'll review it and use it to make UrbanAware better for everyone. 🌱</div>
           </div>
         </div>
       </div>
@@ -233,6 +262,24 @@
   </footer>
 
   <script src="assets/js/common.js"></script>
+  <script>
+    function submitSuggestion() {
+      const name  = document.getElementById('ua-sug-name').value.trim();
+      const email = document.getElementById('ua-sug-email').value.trim();
+      const text  = document.getElementById('ua-sug-text').value.trim();
+      const errEl = document.getElementById('ua-sug-error');
+      errEl.style.display = 'none';
+      if (!name)  { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
+      if (!text || text.length < 10) { errEl.textContent = 'Please write a suggestion (at least 10 characters).'; errEl.style.display = 'block'; return; }
+      const btn = document.getElementById('ua-sug-btn');
+      btn.textContent = 'Submitting…'; btn.disabled = true;
+      setTimeout(() => {
+        document.getElementById('ua-suggestion-form-wrap').style.display = 'none';
+        document.getElementById('ua-suggestion-success').style.display = 'block';
+      }, 500);
+    }
+  </script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       initFallingLeaves();

@@ -42,7 +42,7 @@ function renderDriveCard(drive) {
     'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&q=80',
     'https://images.unsplash.com/photo-1530982011887-3cc11cc85693?w=600&q=80',
   ];
-  const img = images[Math.floor(Math.random() * images.length)];
+  const img = drive.coverImage || images[Math.floor(Math.random() * images.length)];
 
   return `
   <article class="drive-card bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"
@@ -192,6 +192,24 @@ function openHostModal() {
           <input id="host-location" type="text" required placeholder="e.g. Central Park, Delhi"
             class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-400"/>
         </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Cover Image <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+          <div id="host-cover-drop"
+            style="border:2px dashed #d1d5db;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s;background:#fafafa;"
+            onclick="document.getElementById('host-cover-file').click()"
+            ondragover="event.preventDefault();this.style.borderColor='#22c55e'"
+            ondragleave="this.style.borderColor='#d1d5db'"
+            ondrop="handleCoverDrop(event)">
+            <div id="host-cover-placeholder">
+              <div style="font-size:28px;margin-bottom:6px;">🖼️</div>
+              <div style="font-size:13px;color:#6b7280;font-weight:600;">Click or drag & drop an image</div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:2px;">JPG, PNG, WEBP — max 5 MB</div>
+            </div>
+            <img id="host-cover-preview" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:4px;" alt="Cover preview"/>
+          </div>
+          <input type="file" id="host-cover-file" accept="image/*" style="display:none;" onchange="handleCoverSelect(event)"/>
+          <button type="button" id="host-cover-clear" style="display:none;margin-top:6px;font-size:12px;color:#ef4444;background:none;border:none;cursor:pointer;padding:0;" onclick="clearCoverImage()">✕ Remove image</button>
+        </div>
         <div id="host-error" class="hidden text-red-500 text-sm font-semibold"></div>
         <button type="submit" id="host-submit"
           class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-all">
@@ -229,12 +247,19 @@ function openHostModal() {
     btn.textContent = 'Submitting…';
     btn.disabled = true;
 
+    // Use uploaded cover image (base64) or fall back to random stock image
+    const coverPreview = document.getElementById('host-cover-preview');
+    const coverImage = (coverPreview && coverPreview.src && coverPreview.style.display !== 'none')
+      ? coverPreview.src
+      : null;
+
     const result = await apiRequest('/drives/host', {
       method: 'POST',
       body: JSON.stringify({
         title, description: desc, date, location,
         organizer:      user?.name  || 'Anonymous',
-        organizerEmail: user?.email || ''
+        organizerEmail: user?.email || '',
+        ...(coverImage ? { coverImage } : {})
       })
     });
 
@@ -294,4 +319,49 @@ function escHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+// ─── COVER IMAGE HELPERS ──────────────────────────────────────
+function handleCoverSelect(event) {
+  const file = event.target.files[0];
+  if (file) loadCoverFile(file);
+}
+
+function handleCoverDrop(event) {
+  event.preventDefault();
+  document.getElementById('host-cover-drop').style.borderColor = '#d1d5db';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadCoverFile(file);
+}
+
+function loadCoverFile(file) {
+  if (file.size > 5 * 1024 * 1024) {
+    if (typeof showToast === 'function') showToast('Image must be under 5 MB.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const preview = document.getElementById('host-cover-preview');
+    const placeholder = document.getElementById('host-cover-placeholder');
+    const clearBtn = document.getElementById('host-cover-clear');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+    document.getElementById('host-cover-drop').style.borderColor = '#22c55e';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearCoverImage() {
+  const preview = document.getElementById('host-cover-preview');
+  const placeholder = document.getElementById('host-cover-placeholder');
+  const clearBtn = document.getElementById('host-cover-clear');
+  const fileInput = document.getElementById('host-cover-file');
+  preview.src = '';
+  preview.style.display = 'none';
+  placeholder.style.display = 'block';
+  if (clearBtn) clearBtn.style.display = 'none';
+  if (fileInput) fileInput.value = '';
+  document.getElementById('host-cover-drop').style.borderColor = '#d1d5db';
 }

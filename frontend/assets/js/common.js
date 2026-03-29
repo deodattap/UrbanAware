@@ -169,18 +169,16 @@ window.openProfileModal = async function() {
           <input type="file" id="ua-avatar-file" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)" />
         </div>
 
-        <!-- Name & Email -->
+        <!-- Name & Email & Badge -->
         <div style="color:#fff;font-weight:800;font-size:22px;letter-spacing:.2px;">${escHtml(user?.name || 'User')}</div>
         <div style="color:rgba(255,255,255,.78);font-size:13px;margin-top:4px;">✉️ ${escHtml(user?.email || '')}</div>
+        <div style="margin-top:10px;">
+          <span id="ua-profile-badge" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.45);border-radius:999px;padding:5px 14px;font-size:12px;font-weight:700;color:#fff;backdrop-filter:blur(6px);">🏆 Loading…</span>
+        </div>
       </div>
 
       <!-- ── BODY ── -->
       <div style="padding:0 24px 24px;margin-top:-36px;overflow-y:auto;flex:1;">
-
-        <!-- Badge pill -->
-        <div style="text-align:center;margin-bottom:18px;">
-          <span id="ua-profile-badge" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid #e2e8f0;border-radius:999px;padding:7px 18px;font-size:13px;font-weight:700;color:#475569;box-shadow:0 2px 10px rgba(0,0,0,.09);">🏆 Loading…</span>
-        </div>
 
         <!-- SECTION 1 header -->
         <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-left:2px;">📊 Your Stats</div>
