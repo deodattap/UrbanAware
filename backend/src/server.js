@@ -7,25 +7,17 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// ─── Middleware ───────────────────────────────────────────────
-const allowedOrigins = [
-  'https://urban-aware.vercel.app',
-  'http://localhost:3001',
-  'http://localhost:5500',
-  'http://127.0.0.1:5500'
-];
-
+// ─── CORS FIX (UPDATED) ───────────────────────────────────────
 app.use(cors({
-  origin: (origin, cb) => {
-    // Allow requests with no origin (curl, Postman, mobile apps)
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) return cb(null, true);
-    // Allow any vercel.app subdomain (preview deployments)
-    if (origin.endsWith('.vercel.app')) return cb(null, true);
-    cb(new Error(`CORS: origin ${origin} not allowed`));
-  },
+  origin: [
+    "https://urban-aware.vercel.app",
+    /\.vercel\.app$/ // allow preview deployments
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
+// ─── Middleware ───────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -54,7 +46,6 @@ app.use((req, res) => {
 });
 
 // ─── Global error handler ────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(err.status || 500).json({
