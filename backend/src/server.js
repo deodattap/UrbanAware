@@ -8,15 +8,20 @@ const mongoose = require('mongoose');
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5500')
-  .split(',')
-  .map(s => s.trim());
+const allowedOrigins = [
+  'https://urban-aware.vercel.app',
+  'http://localhost:3001',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500'
+];
 
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (curl, Postman, mobile apps)
     if (!origin) return cb(null, true);
     if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) return cb(null, true);
+    // Allow any vercel.app subdomain (preview deployments)
+    if (origin.endsWith('.vercel.app')) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true
@@ -62,17 +67,17 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 
 mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/urbanaware')
+  .connect(process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/urbanaware')
   .then(() => {
     console.log('✅ MongoDB connected');
     app.listen(PORT, () =>
-      console.log(`🚀 Server running on http://localhost:${PORT}`)
+      console.log(`🚀 Server running on port ${PORT}`)
     );
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
     app.listen(PORT, () =>
-      console.log(`⚠️  Server running WITHOUT DB on http://localhost:${PORT}`)
+      console.log(`⚠️ Server running WITHOUT DB on port ${PORT}`)
     );
   });
 

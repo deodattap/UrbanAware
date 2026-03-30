@@ -1,5 +1,11 @@
 {
-  "routes": [
-    { "src": "/", "dest": "/home.html" }
+  "rewrites": [
+    { "source": "/", "destination": "/home.html" },
+    { "source": "/home", "destination": "/home.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/learn", "destination": "/learn.html" },
+    { "source": "/drives", "destination": "/drives.html" },
+    { "source": "/report", "destination": "/reportissue.html" },
+    { "source": "/profile", "destination": "/profile.html" }
   ]
 }

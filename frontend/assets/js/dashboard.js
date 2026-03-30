@@ -1,6 +1,8 @@
 // assets/js/dashboard.js — UrbanAware Dashboard API Integration
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3001/api'
+  : 'https://urbanaware-2ovd.onrender.com/api';
 let leafletMap = null;
 let aqiChart   = null;
 

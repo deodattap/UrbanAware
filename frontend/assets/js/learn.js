@@ -1,5 +1,8 @@
 // assets/js/learn.js — UrbanAware Learn Page
-const API = window.API_BASE || 'http://localhost:3001/api';
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3001/api'
+  : 'https://urbanaware-2ovd.onrender.com/api';
+window.API_BASE = API;
 
 const modules = {
   'Waste Management': {

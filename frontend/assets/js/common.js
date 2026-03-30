@@ -1,6 +1,8 @@
 // assets/js/common.js — UrbanAware Global JS
 // ─── CONFIG ──────────────────────────────────────────────────
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3001/api'
+  : 'https://urbanaware-2ovd.onrender.com/api';
 
 // ─── AUTH HELPERS ─────────────────────────────────────────────
 function getToken() { return localStorage.getItem('ua_token') || localStorage.getItem('token'); }
