@@ -7,15 +7,16 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// ─── CORS FIX (UPDATED) ───────────────────────────────────────
+// ─── ✅ FINAL CORS FIX (SIMPLE & WORKING) ─────────────────────
 app.use(cors({
-  origin: [
-    "https://urban-aware.vercel.app",
-    /\.vercel\.app$/ // allow preview deployments
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "https://urban-aware.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+// 👉 VERY IMPORTANT (fixes preflight requests)
+app.options('*', cors());
 
 // ─── Middleware ───────────────────────────────────────────────
 app.use(express.json());
